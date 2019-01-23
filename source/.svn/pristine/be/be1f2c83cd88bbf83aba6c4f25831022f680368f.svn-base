@@ -1,0 +1,25 @@
+//
+// Created by Jason Watson on 20/09/15.
+//
+
+/*
+ * Script used to convert camera run data from external programs into the .ox.root format.
+ * Currently supported external programs include:
+ * - Readhess
+ * - libCHEC
+ */
+
+#ifndef OXTOOL_TTREE_CONVERTER_H
+#define OXTOOL_TTREE_CONVERTER_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+#include <Entry.h>
+#include <Pixel.h>
+#include <define_rows_and_columns.h>
+#include "Filepath.h"
+
+void oxtools_ttree_converter(Filepath_ptr input_fp, string investigation = "");
+
+#endif //OXTOOL_TTREE_CONVERTER_H

@@ -1,0 +1,321 @@
+//
+// Created by Lucy Martin on 09/01/16.
+//
+
+#include "pulse_spectrum_fit.h"
+
+#include <iostream>
+#include <array>
+#include <vector>
+#include <cmath>
+
+#include <TMath.h>
+#include <TFile.h>
+#include <TH1.h>
+#include <TF1.h>
+#include <TRandom.h>
+#include <TPad.h>
+#include <TDirectory.h>
+#include <TROOT.h>
+#include <Math/DistFuncMathCore.h>
+
+// take the output from previously saved monte carlos and fit to it
+
+// fit function is here a gaussian to represent the pedestal and then the gaussian fit for the photon distribution.
+double_t GaussianDrawingFunction(Double_t *x, Double_t *par)
+{
+    //std::cout<<x[0]<<endl;
+
+    int n, nMin, nMax;
+    nMin = 1;
+    nMax = 20;
+    int number = nMax;
+
+    // make array of n values
+    int nValues[nMax + 1];
+
+
+    for (int i = 0; i <= nMax; ++i)
+    {
+        nValues[i] = i;
+        //std::cout<<nValues[i]<<endl;
+    }
+
+    // plot with the poisson distribution
+// uint32_t
+    uint64_t nFactorial[nMax + 1];
+    nFactorial[0] = 1;
+
+    for (int i = 1; i <= nMax; ++i)
+    {
+        nFactorial[i] = nFactorial[i-1] * i;
+        //std::cout<<nFactorial[i]<<endl;
+    }
+
+    double_t xtotal = 0;
+
+    for (int i = 1; i <= nMax; ++i)
+    {
+
+         xtotal += (par[3] * (pow(par[4], par[5])) * (pow((1 - par[4]), (i - par[5]))) *
+                   (nFactorial[(int)i] / (nFactorial[(int)par[5]] * nFactorial[i - (int)par[5]])) * (pow(par[2], i)) *
+                   (exp(-par[2])) *
+                   (ROOT::Math::normal_pdf(x[0], ((sqrt(par[5])) * par[0]), (par[5] * par[1]))) /
+                   (nFactorial[(int)par[5]]));
+
+        xtotal += (par[3] * (pow(par[4], par[5])) * (pow((1 - par[4]), (i - par[5]))) *
+                   (nFactorial[(int)i] / (nFactorial[(int)par[5]] * nFactorial[i - (int)par[5]])) * (pow(par[6], i)) *
+                   (exp(-par[6])) *
+                   (ROOT::Math::normal_pdf(x[0], ((sqrt(par[5])) * par[0]), (par[5] * par[1]))) /
+                   (nFactorial[(int)par[5]]));
+
+
+    }
+    return xtotal;
+}
+
+
+double_t fittingFunction(Double_t *x, Double_t *par)
+{
+
+    //std::cout<<x[0]<<endl;
+
+    int n, nMin, nMax;
+    nMin = 1;
+    nMax = 20;
+    int number = nMax;
+
+    // make array of n values
+    int nValues[nMax + 1];
+
+
+    for (int i = 0; i <= nMax; ++i)
+    {
+        nValues[i] = i;
+        //std::cout<<nValues[i]<<endl;
+    }
+
+    // plot with the poisson distribution
+// uint32_t
+    uint64_t nFactorial[nMax + 1];
+    nFactorial[0] = 1;
+
+    for (int i = 1; i <= nMax; ++i)
+    {
+        nFactorial[i] = nFactorial[i-1] * i;
+        //std::cout<<nFactorial[i]<<endl;
+    }
+
+
+    double_t xtotal = par[6]*(ROOT::Math::normal_pdf(x[0], par[5], par[4]));
+
+    // Want to try and add cross talk into the fit. Fit will be skewed at the moment. The central limit theorem states
+    // that the sum of many independent, identically distributed particles tends to the normal distribution. So that
+    // the peak for each number of incoming photons (1, 2, 3 etc) can be modelled as a gaussian. However, the distribution
+    // between each of the number of electron peaks won't be poissonian due to things like cross talk and after pulsing,
+    // so that terms need to be added into the fit to take this into account.
+    // If the after pulsing rate and cross talk rate is related to the number of incoming photons then the fit will be improved.
+
+    for (int i = 1; i <= nMax; ++i)
+    {
+        // this is for the afterpulsing at each dynode, later on has less energy but will still effect.
+        // dividing by (mean)^j/8 to give mean and standard deviation for afterpulsing at each dynode
+        // the frequency is multiplied by 0.01, however this isn't good enough, as 2 electrons can have one which
+        // afterpulses, ect, so use n choose r (binomial)
+
+        //
+       for (int k = i; k>0; k--)
+        {
+
+            if (k == 1)
+            {
+                for (int m = 1; m <= nMax; ++m)
+                {
+                    xtotal += (par[3] * (pow(par[7], k)) * (pow((1 - par[7]), (i - k))) *
+                               (nFactorial[i] / (nFactorial[k] * nFactorial[i - k])) *
+                               (pow(par[2], i)) * (exp(-par[2])) * pow((k * par[1]/par[12]), m) * (exp(-k*par[1]/par[12])) *
+                               (ROOT::Math::normal_pdf(x[0], (sqrt(k) * par[11]),
+                                                       (k * par[12]))) /
+                            ((nFactorial[k])*nFactorial[m]));
+
+
+                    // not right, cross talk doesn't alter number of photons, changes the distribution slightly instead?
+
+                    // then stick in nsb fitting for when its turned on:
+
+                    xtotal += (par[3] * (pow(par[7], k)) * (pow((1 - par[7]), (i - k))) *
+                               (nFactorial[i] / (nFactorial[k] * nFactorial[i - k])) *
+                                (pow(par[9], i)) * (exp(-par[9])) * pow((k * par[1]/par[12]), m) * (exp(-k*par[1]/par[12])) *
+                               (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[11]), (k * par[12]))) /
+                               ((nFactorial[k]) * nFactorial[m]));
+
+                    // then add fitting for thermal emission from photocathode, have removed QE rate
+
+                    xtotal += (par[3] * (pow(par[10], k)) * (exp(-par[10])) * pow((k * par[1]/par[12]), m) * (exp(-k*par[1]/par[12])) *
+                               (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[11]), (k * par[12]))) /
+                            ((nFactorial[k]) * nFactorial[m]));
+
+
+                }
+            }
+            else
+            {
+                xtotal += (par[3] * (pow(par[7], k)) * (pow((1 - par[7]), (i - k))) *
+                           (nFactorial[i] / (nFactorial[k] * nFactorial[i - k])) * (pow(par[2], i)) *
+                           (exp(-par[2])) *
+                           (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[0]), (k * par[1]))) /
+                           (nFactorial[k]));
+
+                // here adding the cross talk fit using the known "rate" of cross talk (0.01)
+                // not right, cross talk doesn't alter number of photons, changes the distribution slightly instead?
+
+                // then stick in nsb fitting for when its turned on:
+
+                xtotal += (par[3] * (pow(par[7], k)) * (pow((1 - par[7]), (i - k))) *
+                           (nFactorial[i] / (nFactorial[k] * nFactorial[i - k])) * (pow(par[9], i)) *
+                           (exp(-par[9])) *
+                           (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[0]), (k * par[1]))) /
+                           (nFactorial[k]));
+
+                // then add fitting for thermal emission from photocathode, have removed QE rate
+
+                xtotal += (par[3] * (pow(par[10], nValues[k])) * (exp(-par[10])) *
+                           (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[0]), (k * par[1]))) /
+                           (nFactorial[k]));
+            }
+
+
+
+           for (int j = 0; j < 8; j++)
+            {
+                // have used no. of electrons at each dynode * prob of afterpulsing for dist as p is small, potentially dubious
+                // at 1st dynode when k =1
+                xtotal += (par[3])  * par[8] * pow(k * par[1], j/8) *
+                        (pow(par[2], i)) * (exp(-par[2])) *
+                          (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[0]) / (pow(par[0], j / 16)),
+                                                  (k * par[1]) / (pow(par[1], j / 8)))) / (nFactorial[k]);
+
+                // add nsb afterpulsing:
+                xtotal += (par[3]) * par[8] * pow(k * par[1], j/8)
+                          * (pow((par[9]), i)) * (exp(-(par[9]))) *
+                          (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[0]) / (pow(par[0], j / 16)),
+                                                  (k * par[1]) / (pow(par[1], j / 8)))) / (nFactorial[k]);
+
+                // add thermal afterpulsing
+                xtotal += (par[3])  * par[8] * pow(k * par[1], j/8)
+                          * (pow((par[10]), i)) * (exp(-(par[10]))) *
+                          (ROOT::Math::normal_pdf(x[0], ((sqrt(k)) * par[0]) / (pow(par[0], j / 16)),
+                                                  (nValues[k] * par[1]) / (pow(par[1], j / 8)))) / (k);
+            }
+
+            // this part of the fit comes from the afterpulsing at each dynode and is based on the mean for 1 incoming electron,
+            // which is like afterpulsing at the 1st dynode.
+
+            // this comes form dividing through by the mean of the 1 pe peak and then multiplying by the gain at one dynode^(8-j)
+            // but here the gain is (mean)^1/8 giving the above result.
+
+            // Have here assumed that the poisson distribution at each dynode can be approximated by the normal distribution
+            // have then used the previous rules for the convolution apply, the 16 in the std dev comes from the square root
+            // in the formula for standard deviation.
+
+
+        }
+
+
+        //std::cout<< ROOT::Math::normal_pdf(x[0], ((sqrt(nValues[i]))*par[0]), (nValues[i]*par[1])) <<endl;
+    }
+
+
+
+    //std::cout<<xtotal<<endl;
+
+    return xtotal;
+}
+
+///////////////////////////////////////
+// actual fit bit
+///////////////////////////////////////
+
+void fitPulseSimulation()
+{
+    TFile *f = new TFile("~/Documents/CherenkovTelescopeArray/C++ learning/pulse_simulation9.root");
+
+    TH1F *pulse = (TH1F*)f->Get("h1");
+    pulse->Draw();
+
+    // then fit to it
+
+    TF1 *fitFcn = new TF1("fitFcn",fittingFunction,0,0.03,13);
+    fitFcn->SetNpx(500);
+    fitFcn->SetLineWidth(2);
+    fitFcn->SetLineColor(kMagenta);
+
+    // par[2] is lambda, par[0] is standard deviation, par[1] is mean, par[3] is multiplication constant,
+    // par[4] is pedestal mean, par[5] is the pedestal standard deviation, par[6] is multiplication for pedestal.
+    // par[7] is the QE, par[8] is the rate of afterpulsing, par[9] is the rate of nsb
+    // par[10] is rate of thermal emission from photocathode
+    // par[11] is the standard deviation of the gaussian from dynode 2 and par[12] is the mean
+
+    Double_t fitpar[13];
+
+    fitFcn->SetParameter(0, 0.0035);
+    fitFcn->SetParameter(1, 0.003);
+    //fitFcn->SetParLimits(1, 0.003, 1);
+    fitFcn->SetParameter(2, 1);
+    //fitFcn->SetParLimits(2, 0, 50);
+    fitFcn->SetParameter(3, 0.8);
+    //fitFcn->SetParLimits(3, 0, 5);
+    fitFcn->SetParameter(4, 0);
+    //fitFcn->FixParameter(4, 0);
+    fitFcn->SetParameter(5, 0.0015);
+    //fitFcn->SetParLimits(5, 0, 0.005);
+    //fitFcn->SetParLimits(5, 0, 50);
+    fitFcn->SetParameter(6, 1.8);
+    //fitFcn->SetParLimits(6, 0, 5);
+    fitFcn->SetParameter(7, 0.35);
+    fitFcn->SetParLimits(7, 0.35, 0.35);
+    fitFcn->SetParameter(8, 0.01);
+    fitFcn->FixParameter(8, 0.01);
+    fitFcn->SetParameter(9, 0.0);
+    fitFcn->FixParameter(9, 0);
+    fitFcn->SetParameter(10, 0.0);
+    fitFcn->FixParameter(10, 0);
+    // be careful with what this actually is, its the rate of nsb in a 18ns region whereas input value in
+    // simulation is for the rate over the full 90ns.
+    fitFcn->SetParameter(11, 0.00082);
+    //fitFcn->SetParLimits(11, 0, 1);
+    fitFcn->SetParameter(12, 0.001);
+
+
+    pulse->Fit("fitFcn");
+    fitFcn->GetParameters(fitpar);
+    //gr->Draw("AL");
+    std::cout<<fitFcn->GetChisquare()<<std::endl;
+
+    TF1 *pedistal = new TF1("pedistal", "[0]*(ROOT::Math::normal_pdf(x, [1], [2]))", 0., 0.03);
+    pedistal->SetLineColor(kBlue);
+    pedistal->SetParameter(0, fitpar[6]);
+    pedistal->SetParameter(1, fitpar[5]);
+    pedistal->SetParameter(2, fitpar[4]);
+    pedistal->Draw("Same");
+
+
+    for(int j = 1; j<6; j++)
+    {
+        char name[20];
+        sprintf(name, "%s%d","gaussianPlot",j);
+        TF1 *gaussianPlot = new TF1(name, GaussianDrawingFunction, 0, 0.03, 7);
+        gaussianPlot->SetParameter(0, fitpar[0]);
+        gaussianPlot->SetParameter(1, fitpar[1]);
+        gaussianPlot->SetParameter(2, fitpar[2]);
+        gaussianPlot->SetParameter(3, fitpar[3]);
+        gaussianPlot->SetParameter(4, fitpar[7]);
+        gaussianPlot->SetParameter(5, j);
+        gaussianPlot->SetParameter(6, fitpar[9]);
+        gaussianPlot->DrawCopy("Same");
+        delete gaussianPlot;
+    }
+
+
+
+}

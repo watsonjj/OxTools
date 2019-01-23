@@ -1,0 +1,36 @@
+__IMPORTANT__
+
+- When adding a new source file, make sure to run OxTools_clean and OxTools_cmake
+	to ensure the file is included into the build.
+
+- When committing changes to subversion make sure the code compiles and runs
+	without errors!
+
+__Commands that are used with OxTools__
+
+OxTools_clean    - Remove contents of the build and install directories
+OxTools_cmake    - Cmake the project
+OxTools_make     - Make the project
+OxTools_install  - Install the project, so the executables appear in the install
+							directories. Places terminal into install directory after.
+OxTools_build    - Performs the same as OxTools_make + OxTools_install
+OxTools_fresh    - Performs the same as OxTools_clean + OxTools_cmake +
+							OxTools_make + OxTools_install
+OxTools_goi      - Changes directory to install directory
+OxTools_gos      - Changes directory to source directory
+OxTools_gob      - Changes directory to build directory
+OxTools_checkout - Check-out OxTools from subversion into the source directory
+							Only use if you want to restore the source files to the
+							latest revision
+OxTools_update   - Update OxTools to the latest version. Will consult you on
+							local changes you have made that conflict
+OxTools_commit   - Only use if code compiles and runs without errors!
+							Commit changes to the subversion. Specify the filepath of
+							the file the you wish to commit. You must include a
+							message (in quotation marks) using -m.
+OxTools_add      - Add a new file to the subversion
+OxTools_info     - Show subversion info
+OxTools_log      - Show subversion log
+OxTools_diff     - Show the local differences compared to previous update
+OxTools_status   - Show the files that are changes compared to previous update
+OxTools_revert   - Revert OxTools to the version specified

@@ -1,0 +1,17 @@
+//
+// Created by Jason Watson on 08/04/2016.
+//
+
+#include <pulse_spectrum_fit.h>
+
+void low_light_level_fit(TH1F* spectrum, fs::path output_path) {
+
+	TCanvas* canvas = new TCanvas("c1", "c1", 3000, 2000);
+	spectrum->Draw();
+
+	if (boost::filesystem::create_directories(output_path.parent_path()))
+		COUTP("[directory][new] "<< output_path);
+	canvas->SaveAs(output_path.c_str());
+	COUTP("[file][output] " << output_path);
+
+}

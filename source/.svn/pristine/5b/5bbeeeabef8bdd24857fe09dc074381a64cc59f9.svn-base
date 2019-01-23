@@ -1,0 +1,89 @@
+//
+// Created by Jason Watson on 18/09/15.
+//
+
+#include "Entry.h"
+
+uint32_t Entry::s_nIDGenerator = 0;
+string Entry::s_investigation = "";
+
+void Entry::Reset() {
+	m_tree_index = 0;
+	m_event = 0;
+	m_source_event = 0;
+	m_event_timestamp = 0;
+	m_pixel = 0;
+	m_pulse_height = 0;
+	m_pulse_area = 0;
+	m_pulse_position = 0;
+	m_true_npe = 0;
+
+	m_branch_value.clear();
+	m_eventid_set.clear();
+}
+
+void Entry::ResetStatic() {
+	s_nIDGenerator = 0;
+	s_investigation = "";
+}
+
+void Entry::parse_txt_file_line(string txt_file_line) {
+	std::istringstream iss(txt_file_line);
+	string context;
+	iss >> context;
+	iss >> s_investigation;
+	iss >> m_source_event;
+	iss >> m_event_timestamp;
+	iss >> m_pixel;
+	iss >> m_pulse_height;
+	iss >> m_pulse_area;
+	iss >> m_pulse_position;
+	iss >> m_true_npe;
+	if (m_eventid_set.insert(GetSourceEvent()).second) {
+		m_event = s_nIDGenerator++;
+	}
+}
+
+
+void Entry::SetOutputReadhessTTreeBranches(TTree *&output_TTree) {
+	output_TTree->Branch("fInvestigation", &s_investigation, "fInvestigation/C");
+	output_TTree->Branch("fEventIndex", &m_event, "fEventIndex/i");
+	output_TTree->Branch("fSourceEventIndex", &m_source_event, "fEventIndex/i");
+	output_TTree->Branch("fEventTimestamp", &m_event_timestamp, "fEventTimestamp/l");
+	output_TTree->Branch("fPixelId", &m_pixel, "fPixelId/I");
+	output_TTree->Branch("fPulseHeight", &m_pulse_height, "fPulseHeight/F");
+	output_TTree->Branch("fPulseArea", &m_pulse_area, "fPulseArea/F");
+	output_TTree->Branch("fPulsePosition", &m_pulse_position, "fPulsePosition/F");
+	output_TTree->Branch("fTrueNPE", &m_true_npe, "fTrueNPE/F");
+};
+
+
+
+void Entry::SetDefaultOxtoolsInputBranches(TTree *&input_TTree) {
+	cout << Print::Level() << "[ttree][event] Setting default event branch addresses" << endl;
+	input_TTree->SetBranchAddress("fEventIndex", &m_event);
+	input_TTree->SetBranchAddress("fEventTimestamp", &m_event_timestamp);
+	input_TTree->SetBranchAddress("fPixelId", &m_pixel);
+}
+
+void Entry::IncludeOxtoolInputBranch(TTree *&input_TTree, vector<string> branch_name_vector) {
+	for (string branch_name : branch_name_vector) {
+		cout << Print::Level() << "[ttree][event] Including event branch address: " << branch_name << endl;
+		if (!check_TTree_branch_exists(input_TTree, branch_name.c_str()))
+			throw std::invalid_argument("[ttree][error] Entry TTree does not contain branch");
+		input_TTree->SetBranchAddress(branch_name.c_str(), &m_branch_value[branch_name]);
+	}
+}
+
+void Entry::IncludeOxtoolInputBranch(TTree *&input_TTree, string branch_name) {
+	vector<string> branch_name_vector = {branch_name};
+	IncludeOxtoolInputBranch(input_TTree, branch_name_vector);
+}
+
+
+float Entry::GetBranchValue(string branch_name) {
+	if (!m_branch_value.count(branch_name)) {
+		throw std::invalid_argument("[event][error] Event does not exist");
+	}
+	return m_branch_value[branch_name];
+}

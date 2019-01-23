@@ -1,0 +1,70 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+#include "Filepaths.h"
+
+
+Filepaths::Filepaths(fs::path input_filepath) {
+	Init();
+	SetInput(input_filepath);
+}
+
+void Filepaths::Init() {
+	mInput = "";
+	mInputName = "";
+	mInputDirectory = "";
+	mInputStem = "";
+	mInputExtension = "";
+	mOutput = "";
+	mOutputName = "";
+	mOutputDirectory = "";
+
+	mRunNumber = "";
+	mRunIdentifier = "";
+	mOx = false;
+}
+
+void Filepaths::SetInput(fs::path input) { //private
+	Init();
+	if (!fs::exists(input))
+		throw std::invalid_argument("[file][error] Input file does not exist");
+	mInput = input;
+	mInputName = input.filename();
+	mInputDirectory = input.parent_path();
+	mInputStem = input.stem();
+	mInputExtension = input.extension();
+	if (strcmp(mInputStem.extension().c_str(),".ox") == 0) {
+		mOx = true;
+		mInputStem = mInputStem.stem();
+		mInputExtension = fs::path(".ox" + mInputExtension.string());
+	}
+	SetRun();
+}
+
+void Filepaths::SetOutput(fs::path output) { //private
+	mOutput = output;
+	mOutputName = output.filename();
+	mOutputDirectory = output.parent_path();
+}
+
+void Filepaths::BuildOutput(string subdirectory, string name, string extension, fs::path directory) {
+	fs::path output = mInputDirectory;
+	if (!directory.empty()) output = directory;
+	output /= subdirectory;
+	output /= name;
+	output += extension;
+	SetOutput(output);
+}
+
+void Filepaths::SetRun() { //private
+	mRunNumber = regex_extract(mInputStem.string(), "cameradata_run([0-9]+.*)", false);
+	mRunIdentifier = mRunNumber;
+	if (mInput.string().find("cameradata_run") != string::npos)
+		mRunIdentifier = "r" + mRunNumber;
+}
+
+void Filepaths::CreateOutputDirectory() {
+	if (boost::filesystem::create_directories(mOutputDirectory))
+		cout << Print::Level() << "[file] Directory Created: "<< mOutputDirectory << endl;
+}

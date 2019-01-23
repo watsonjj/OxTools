@@ -1,0 +1,216 @@
+//
+// Created by Jason Watson on 10/09/15.
+//
+
+/* TODO ideas:
+ * option to print list of branches
+*/
+
+#include <camera_image_plotter.h>
+
+void camera_image_plotter(Filepaths &filepaths, string branch_name,
+                          uint32_t event_requested,
+                          bool all_events, bool save_images) {
+
+	START();
+
+	//Select required branches
+	vector<string> branch_vector = {branch_name};
+
+	//Build run
+	Run run0(filepaths.GetInput(), branch_vector);
+
+	// Check we are not out of range
+	if (event_requested > run0.GetMaxEventNum()) {
+		throw std::invalid_argument("[event][error] Requested event out of range");
+	}
+
+	// Create canvas
+	map<int,TCanvas*> canvas_map;
+	map<int,TPad*> pad_map;
+
+	// Print setup
+	cout << Print::Level() << "[branch] " << branch_name << endl;
+	cout << Print::Level() << "[camera][num] " << run0.GetNumCameras() << endl;
+	if (all_events) cout << Print::Level() << "[events][num] " << run0.GetMaxEventNum()+1 << endl;
+	else cout << Print::Level() << "[event] " << event_requested << endl;
+
+	//Loop over cameras
+	Print::LevelIncrease();
+	for (const auto &camera_pair : run0.GetCameraMap()) {
+		const auto &camera = camera_pair.second;
+		uint32_t current_camera = camera.GetCameraId();
+		if (!run0.CheckEventExists(current_camera, event_requested)) continue;
+
+		// Create canvas
+		canvas_map[current_camera] = new TCanvas(Form("Camera%d",current_camera),
+		                                         "Camera Canvas", 1000, 1000);
+		pad_map[current_camera] = (TPad *) canvas_map[current_camera]->GetPad(0);
+		pad_map[current_camera]->SetRightMargin(0.15);
+
+		// Create Histograms
+		TH2F *Hhist0 = base_TH2F_builder(camera);
+		TH2F *Hcamera_image = (TH2F *) Hhist0->Clone("Hcamera_image");
+		TH2F *Hcamera_pixels = (TH2F *) Hhist0->Clone("Hcamera_pixels");
+
+		// Setup Histograms
+		Hcamera_image->GetZaxis()->SetTitle(branch_name.c_str());
+		if (all_events) {
+			Hcamera_image->GetZaxis()->SetRangeUser(
+					  run0.GetBranchMin(branch_name),
+					  run0.GetBranchMax(branch_name));
+		}
+		else {
+			Hcamera_image->GetZaxis()->SetRangeUser(
+					  camera.GetEvent(event_requested).GetBranchMin(branch_name),
+					  camera.GetEvent(event_requested).GetBranchMax(branch_name));
+		}
+		Hcamera_pixels->SetMarkerSize(0.3);
+
+		// Create Pixel Outlines
+		vector<TLine *> line_vector = pixel_outlines(camera);
+
+		// Set up output gif for all_events (so previous gif is deleted)
+		if (all_events) {
+			filepaths.BuildOutput(filepaths.GetRunIdentifier(),
+			                      filepaths.GetRunIdentifier()
+			                      + "_c" + std::to_string(current_camera)
+			                      + branch_name + "_image", ".gif");
+			fs::remove(filepaths.GetOutput()); // delete previous gif
+		}
+
+		// Loop over events
+		Progress progress(camera.GetNumEvents(),"Looping over events : ");
+		int progress_i = 0;
+		Print::LevelIncrease();
+		for (const auto &event_it_pair : camera.GetEventMap()) {
+			const auto &event_it = event_it_pair.second;
+			uint32_t current_event = event_it.GetEventIndex();
+			if (!all_events && current_event != event_requested) continue;
+
+			progress.Print(++progress_i);
+
+			for (auto entry_it_pair : event_it.GetEntryMap()) {
+				auto entry = entry_it_pair.second;
+				//Fill histogram with values
+				int pixel = entry.GetPixel();
+				int row = camera.GetPixel(pixel).GetRow();
+				int column = camera.GetPixel(pixel).GetColumn();
+				float bin_content = entry.GetBranchValue(branch_name);
+				Hcamera_image->SetBinContent(column + 1, row + 1, bin_content);
+				Hcamera_pixels->SetBinContent(column + 1, row + 1, pixel);
+			}
+
+			//Draw histograms
+			Hcamera_image->Draw("colz");
+			Hcamera_pixels->Draw("same text");
+			for (TLine *line : line_vector) {
+				line->Draw("same");
+			}
+			Hcamera_image->SetTitle(Form("[IMAGE] Camera [RUN] %s [CAMERA] %d [EVENT] %d",
+			                             filepaths.GetRunNumber().c_str(), camera.GetCameraId(),
+			                             event_it.GetEventIndex()));
+
+			// Save to file
+			if (save_images) {
+				filepaths.BuildOutput(filepaths.GetRunIdentifier(),
+				                      filepaths.GetRunIdentifier()
+				                      + "_c" + std::to_string(current_camera)
+				                      + "_e" + std::to_string(current_event)
+				                      + branch_name + "_image", ".pdf");
+				if (all_events)
+					filepaths.BuildOutput(filepaths.GetRunIdentifier(),
+					                      filepaths.GetRunIdentifier()
+					                      + "_c" + std::to_string(current_camera)
+					                      + branch_name + "_image", ".gif+30");
+				filepaths.CreateOutputDirectory();
+				canvas_map[current_camera]->SaveAs(filepaths.GetOutput().c_str());
+			}
+		}
+		Print::LevelDecrease();
+		if (all_events) {
+			filepaths.BuildOutput(filepaths.GetRunIdentifier(),
+			                      filepaths.GetRunIdentifier()
+			                      + "_c" + std::to_string(current_camera)
+			                      + branch_name + "_image", ".gif++100++");
+			canvas_map[current_camera]->SaveAs(filepaths.GetOutput().c_str());
+		}
+		gPad->Update();
+	}
+	Print::LevelDecrease();
+	END();
+}
+
+TH2F* base_TH2F_builder(const Camera &camera) {
+	int num_rows = camera.GetNumRows();
+	int num_columns = camera.GetNumColumns();
+
+	//Set up base histogram
+	TH2F *Hhist0 = new TH2F(Form("base_histogram%d",camera.GetCameraId()),
+	                        "Base Histogram", num_columns, 0,
+	                        num_columns, num_rows, 0, num_rows);
+	Hhist0->GetXaxis()->SetLabelSize(0);
+	Hhist0->GetXaxis()->SetTickLength(0);
+	Hhist0->GetYaxis()->SetLabelSize(0);
+	Hhist0->GetYaxis()->SetTickLength(0);
+	Hhist0->SetStats(0);
+	Hhist0->GetZaxis()->SetLabelSize(0.03);
+	Hhist0->GetZaxis()->SetTitleOffset(1.2);
+
+	// Define gradient color palette
+	const Int_t NRGBs = 5;
+	const Int_t NCont = 255;
+	Double_t stops[NRGBs] = {0.00, 0.34, 0.61, 0.84, 1.00};
+	Double_t red[NRGBs] = {0.00, 0.00, 0.87, 1.00, 0.51};
+	Double_t green[NRGBs] = {0.00, 0.81, 1.00, 0.20, 0.00};
+	Double_t blue[NRGBs] = {0.51, 1.00, 0.12, 0.00, 0.00};
+	TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+	gStyle->SetNumberContours(NCont);
+
+	return Hhist0;
+}
+
+
+
+vector<TLine *> pixel_outlines(const Camera &camera) {
+	int row, column;
+	TLine *line1, *line2, *line3, *line4;
+	std::vector<TLine *> line_vector;
+	int sqrt_modulepixel = (int) sqrt(camera.GetNumModulePixels());
+	if (sqrt_modulepixel != 8) cout << "[DEBUG] sqrt_modulepixel != 8" << endl;
+	for (const auto &pixel_it_pair : camera.GetPixelMap()) {
+		const auto &pixel = pixel_it_pair.second;
+		if (pixel.GetPixel() != -1) {
+			row = pixel.GetRow();
+			column = pixel.GetColumn();
+			line1 = new TLine(column, row, column, row + 1);
+			line2 = new TLine(column, row, column + 1, row);
+			line3 = new TLine(column + 1, row, column + 1, row + 1);
+			line4 = new TLine(column, row + 1, column + 1, row + 1);
+			if ((row + 1) % sqrt_modulepixel == 0) {
+				line4->SetLineColor(2);
+				line4->SetLineWidth(3);
+			}
+			if (row % sqrt_modulepixel == 0) {
+				line2->SetLineColor(2);
+				line2->SetLineWidth(3);
+			}
+			if ((column + 1) % sqrt_modulepixel == 0) {
+				line3->SetLineColor(2);
+				line3->SetLineWidth(3);
+			}
+			if (column % sqrt_modulepixel == 0) {
+				line1->SetLineColor(2);
+				line1->SetLineWidth(3);
+			}
+			line_vector.push_back(line1);
+			line_vector.push_back(line2);
+			line_vector.push_back(line3);
+			line_vector.push_back(line4);
+		}
+		else {
+			cout << "[DEBUG] Pixel id == -1" << endl;
+		}
+	}
+	return line_vector;
+}

@@ -1,0 +1,65 @@
+//
+// Created by Lucy Martin on 05/02/16.
+//
+
+#ifndef OXTOOLS_PULSESPECTRUMFIT_H
+#define OXTOOLS_PULSESPECTRUMFIT_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class PulseSpectrumFit {
+private:
+	 TH1F* mSpectrum;
+	 string mType; // Type of fit to perform
+	 fs::path mOutput;
+	 TH1F* mCalibSpectrum;
+
+	 double mXmin;
+	 double mXmax;
+	 int mMaxPhotons;
+	 TF1* mPedRisingEdgeFit;
+	 TF1* mLowPEFit;
+	 Double_t mPedRisingEdgePar[6];
+	 Double_t mLowPEPar[9];
+	 map<uint,TF1*> mPEMap;
+
+
+	 void Init();
+	 void FitPedRisingEdge();
+	 void FitLowPE();
+
+
+
+
+
+public:
+	 PulseSpectrumFit(TH1F* spectrum, string type, fs::path output, TH1F* calib_spectrum = nullptr)
+			   : mSpectrum(spectrum),
+	           mType(type),
+	           mOutput(output),
+	           mCalibSpectrum(calib_spectrum)
+	 {
+		 Init();
+		 if (strcmp(type.c_str(), "low") == 0) {
+			 FitLowPE();
+			 DrawPedRisingEdge(fs::path(output.string() + "PedRisingEdge.png"));
+			 DrawLowPE(fs::path(output.string() + "LowPE.png"));
+		 }
+		 if (strcmp(type.c_str(), "high") == 0) {
+			 if (!calib_spectrum) THROW("calib_spectrum is nullptr");
+		 }
+		 if (strcmp(type.c_str(), "both") == 0) {
+			 if (!calib_spectrum) THROW("calib_spectrum is nullptr");
+			 FitLowPE();
+			 DrawPedRisingEdge(fs::path(output.string() + "PedRisingEdge.png"));
+			 DrawLowPE(fs::path(output.string() + "LowPE.png"));
+		 }
+	 }
+
+	 void DrawPedRisingEdge(fs::path output);
+	 void DrawLowPE(fs::path output);
+	 float GetTrueCharge(float x);
+};
+
+#endif //OXTOOLS_PULSESPECTRUMFIT_H

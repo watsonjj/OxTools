@@ -1,0 +1,299 @@
+//
+// Created by Jason Watson on 01/10/15.
+//
+
+#include "charge_resolution_plotter.h"
+
+
+void charge_resolution_plotter(vector<Filepath_ptr> filepathV, bool save_images,
+                               string output_name, int max_npe) {
+	START();
+
+	string trueNPE_branch = "fTrueNPE";
+	string measuredNPE_branch = "fPulseArea";
+	set<string> branchV = {trueNPE_branch, measuredNPE_branch};
+
+	// Create canvas
+	COUTP("[canvas] Creating canvas");
+	TCanvas *Cc1 = new TCanvas("Cc1", "Cc1", 3000, 1500);
+	Cc1->Divide(2);
+	TPad *Ppad1 = (TPad *) Cc1->GetPad(1);
+	TPad *Ppad2 = (TPad *) Cc1->GetPad(2);
+	Ppad1->SetRightMargin(0.2);
+	Ppad1->SetLogx();
+	Ppad1->SetLogy();
+//	Ppad1->SetGrid();
+	Ppad2->SetLogx();
+//	Ppad2->SetGrid();
+
+	// Create array for colors
+	Style_t color_array[5] = {kBlue, kMagenta, kGray + 3, kOrange, kCyan};
+	Style_t marker_array[3] = {2, 3, 5};
+
+	TMultiGraph *mg = new TMultiGraph();
+	TMultiGraph *mg_scaled = new TMultiGraph();
+	TLegend *leg = new TLegend(0.81, 0.80-0.025*(filepathV.size()+3), 0.99, 0.80);
+
+	int i = 0;
+	for (auto& filepath : filepathV) {
+		Run_ptr run = filepath->Read();
+		ChargeResolution::SetMaxNPE((max_npe==0)?(int)run->GetBranchMax(trueNPE_branch):max_npe);
+		ChargeResolution* chargeResHolder = run->GetChargeResolution(trueNPE_branch,
+		                                                            measuredNPE_branch);
+
+		TGraphErrors* g = chargeResHolder->GetChargeResolutionGraph();
+		TGraphErrors* gS = chargeResHolder->GetChargeResolutionScaledGraph();
+
+		// Style Graph
+		g->SetMarkerStyle(marker_array[i % 3]);
+		g->SetMarkerColor(color_array[i % 5]);
+		g->SetMarkerSize(2);
+		g->SetLineColor(color_array[i % 5]);
+		g->SetTitle(std::to_string(i).c_str());
+		gS->SetMarkerStyle(marker_array[i % 3]);
+		gS->SetMarkerColor(color_array[i % 5]);
+		gS->SetMarkerSize(2);
+		gS->SetLineColor(color_array[i % 5]);
+		gS->SetTitle(std::to_string(i).c_str());
+
+		// Fill Multigraph
+		COUTP("[TGraph] Appending to multigraph");
+		if (g->GetN() > 0) {
+			leg->AddEntry(g, filepath->GetRunIdentifier().c_str(), "pl");
+			mg->Add(g);
+			mg_scaled->Add(gS);
+		}
+		i++;
+	}
+
+	// Get Requirement and Goal
+	ChargeResolution::SetMaxNPE(max_npe);
+	if (max_npe!=0) ChargeResolution::ResetMaxNPE();
+	TGraph* g_R = ChargeResolution::GetRequirementGraph();
+	TGraph* g_RS = ChargeResolution::GetRequirementScaledGraph();
+	TGraph* g_G = ChargeResolution::GetGoalGraph();
+	TGraph* g_GS = ChargeResolution::GetGoalScaledGraph();
+
+	leg->AddEntry(g_R, "Requirement", "pl");
+	leg->AddEntry(g_G, "Goal", "pl");
+	mg->Add(g_R);
+	mg->Add(g_G);
+	mg_scaled->Add(g_RS);
+	mg_scaled->Add(g_GS);
+
+//	TGraph* g_test = ChargeResolution::GetTestGraph();
+//	leg->AddEntry(g_test, "Test", "pl");
+//	mg->Add(g_test);
+
+
+	// Draw Multigraph
+	COUTP("[TGraph] Drawing multigraphs");
+	Cc1->cd(1);
+	mg->SetTitle(output_name.c_str());
+	mg->Draw("AP");
+	mg->GetXaxis()->SetTitle("True Charge (Q_{True}) (p.e.)");
+	mg->GetXaxis()->SetTitleSize(0.02);
+	mg->GetXaxis()->SetTitleOffset(1.3);
+	mg->GetXaxis()->SetLabelSize(0.02);
+//	mg->GetXaxis()->SetRangeUser(0,110);
+	mg->GetYaxis()->SetTitle("Fractional Charge Resolution #sigma_{Q}/Q_{True}(p.e.)");
+	mg->GetYaxis()->SetTitleSize(0.02);
+	mg->GetYaxis()->SetTitleOffset(1.5);
+	mg->GetYaxis()->SetLabelSize(0.02);
+
+	// Draw Legend
+	leg->SetNColumns(1);
+	leg->SetHeader("Run");
+//	leg->SetBorderSize(0);
+	leg->Draw();
+
+	// Draw Multigraph
+	Cc1->cd(2);
+	mg_scaled->SetTitle("");
+	mg_scaled->Draw("AP");
+	mg_scaled->GetXaxis()->SetTitle("True Charge (Q_{True}) (p.e.)");
+	mg_scaled->GetXaxis()->SetTitleSize(0.02);
+	mg_scaled->GetXaxis()->SetTitleOffset(1.3);
+	mg_scaled->GetXaxis()->SetLabelSize(0.02);
+//	if (max_npe != 0) mg_scaled->GetXaxis()->SetRangeUser(0,max_npe);
+	mg_scaled->GetYaxis()->SetTitle("Fractional Charge Resolution #sigma_{Q}/Q_{True}(p.e.) (Relative to Goal)");
+	mg_scaled->GetYaxis()->SetTitleSize(0.02);
+	mg_scaled->GetYaxis()->SetTitleOffset(1.5);
+	mg_scaled->GetYaxis()->SetLabelSize(0.02);
+
+	if (save_images) {
+		fs::path input_directory = filepathV[0]->GetInputDirectory();
+		fs::path save_name = output_name + ".png";
+		fs::path save_path = input_directory / "charge_resolution" / save_name;
+		if (boost::filesystem::create_directories(save_path.parent_path()))
+			COUTP("[directory][new] "<< save_path);
+		Cc1->SaveAs(save_path.c_str());
+		COUTP("[file][output] " << save_path);
+	}
+
+	print_charge_resolution_scores(filepathV, max_npe);
+
+	END();
+}
+
+void print_charge_resolution_scores(vector<Filepath_ptr> filepathV, int max_npe) {
+	START();
+
+	string trueNPE_branch = "fTrueNPE";
+	string measuredNPE_branch = "fPulseArea";
+	set<string> branchV = {trueNPE_branch, measuredNPE_branch};
+
+
+	std::stringstream lowcut1;
+	std::stringstream lowcut2;
+	std::stringstream highcut1;
+	std::stringstream highcut2;
+	lowcut1 << ChargeResolution::GetLowCut1();
+	lowcut2 << ChargeResolution::GetLowCut2();
+	highcut1 << ChargeResolution::GetHighCut1();
+	if (max_npe > ChargeResolution::GetHighCut2()) highcut2 << ChargeResolution::GetHighCut2();
+	else highcut2 << max_npe;
+	if (max_npe == 0) highcut2.str("max_npe");
+
+	// Score Vectors
+	vector<vector<string>> score_vector = {{"Run"},
+	                                       {"Low ( " + lowcut1.str() + "<Q<=" + lowcut2.str() + " )"},
+	                                       {"Low Rank"},
+	                                       {"High ( " + highcut1.str() + "<Q<=" + highcut2.str() + " )"},
+	                                       {"High Rank"},
+	                                       {"Overall"},
+	                                       {"Overall Rank"}};
+	vector<vector<double>> value_vector = {{},{},{}};
+	vector<vector<string>> rank_vector = {{},{},{}};
+	double min_low = DBL_MAX, min_high = DBL_MAX, min_total = DBL_MAX;
+	string best_low, best_high, best_total;
+	double max_low = -DBL_MAX, max_high = -DBL_MAX, max_total = -DBL_MAX;
+	string worst_low, worst_high, worst_total;
+
+	for (auto& filepath : filepathV) {
+		Run_ptr run = filepath->Read();
+		ChargeResolution::SetMaxNPE((max_npe==0)?(int)run->GetBranchMax(trueNPE_branch):max_npe);
+		ChargeResolution* chargeResHolder = run->GetChargeResolution(trueNPE_branch,
+		                                                            measuredNPE_branch);
+
+		// Scores
+		score_vector[0].push_back(filepath->GetRunIdentifier());
+		score_vector[1].push_back(std::to_string(chargeResHolder->GetScoreLow()));
+		score_vector[3].push_back(std::to_string(chargeResHolder->GetScoreHigh()));
+		score_vector[5].push_back(std::to_string(chargeResHolder->GetScoreOverall()));
+		value_vector[0].push_back(chargeResHolder->GetScoreLow());
+		value_vector[1].push_back(chargeResHolder->GetScoreHigh());
+		value_vector[2].push_back(chargeResHolder->GetScoreOverall());
+		if (min_low > chargeResHolder->GetScoreLow()) {
+			min_low = chargeResHolder->GetScoreLow();
+			best_low = filepath->GetRunIdentifier();
+		}
+		if (min_high > chargeResHolder->GetScoreHigh()) {
+			min_high = chargeResHolder->GetScoreHigh();
+			best_high = filepath->GetRunIdentifier();
+		}
+		if (min_total > chargeResHolder->GetScoreOverall()) {
+			min_total = chargeResHolder->GetScoreOverall();
+			best_total = filepath->GetRunIdentifier();
+		}
+
+		if (max_low < chargeResHolder->GetScoreLow()) {
+			max_low = chargeResHolder->GetScoreLow();
+			worst_low = filepath->GetRunIdentifier();
+		}
+		if (max_high < chargeResHolder->GetScoreHigh()) {
+			max_high = chargeResHolder->GetScoreHigh();
+			worst_high = filepath->GetRunIdentifier();
+		}
+		if (max_total < chargeResHolder->GetScoreOverall()) {
+			max_total = chargeResHolder->GetScoreOverall();
+			worst_total = filepath->GetRunIdentifier();
+		}
+	}
+
+	// Rank each run
+	for (int i=0; i<value_vector.size(); i++) {
+		for (double current : value_vector[i]) {
+			int position = 0;
+			for (double compare : value_vector[i]) {
+				if (current > compare) position++;
+			}
+			position++;
+			rank_vector[i].push_back(std::to_string(position));
+		}
+	}
+	for (string rank: rank_vector[0]) score_vector[2].push_back(rank);
+	for (string rank: rank_vector[1]) score_vector[4].push_back(rank);
+	for (string rank: rank_vector[2]) score_vector[6].push_back(rank);
+
+	score_vector[0].push_back("BEST: ");
+	score_vector[1].push_back(best_low);
+	score_vector[3].push_back(best_high);
+	score_vector[5].push_back(best_total);
+	score_vector[0].push_back("WORST: ");
+	score_vector[1].push_back(worst_low);
+	score_vector[3].push_back(worst_high);
+	score_vector[5].push_back(worst_total);
+
+	COUTP("[chargeres][scores] : ");
+	Table score_table(score_vector);
+	score_table.Print();
+
+	END();
+}
+
+void charge_variation_plotter(vector<Filepath_ptr> filepathV, bool save_images, int max_npe) {
+
+	START();
+
+	string trueNPE_branch = "fTrueNPE";
+	string measuredNPE_branch = "fPulseArea";
+	set<string> branchV = {trueNPE_branch, measuredNPE_branch};
+
+	for (auto& filepath : filepathV) {
+
+		// Create canvas
+		COUTP("[canvas] Creating canvas");
+		TCanvas *canvas = new TCanvas("Cc1", "Cc1", 1500, 1500);
+		TPad *Ppad1 = (TPad *) canvas->GetPad(0);
+		Ppad1->SetRightMargin(0.2);
+		Ppad1->SetLogz();
+		Ppad1->SetGrid();
+
+		Run_ptr run = filepath->Read();
+		int actual_max = (max_npe==0)?(int)run->GetBranchMax(trueNPE_branch):max_npe;
+		ChargeResolution::SetMaxNPE(actual_max);
+		ChargeResolution* chargeResHolder = run->GetChargeResolution(trueNPE_branch,
+		                                                            measuredNPE_branch);
+
+
+		rainbow_palette();
+		TH2F* hist = chargeResHolder->GetVariationHist();
+		hist->GetXaxis()->SetTitle("log_{10} Q_{True}");
+		hist->GetYaxis()->SetTitle("log_{10} Q_{Measured}");
+		hist->GetXaxis()->SetTitleSize(0.02);
+		hist->GetYaxis()->SetTitleSize(0.02);
+		hist->GetXaxis()->SetTitleOffset(2);
+		hist->GetYaxis()->SetTitleOffset(2);
+		hist->SetTitle(filepath->GetRunIdentifier().c_str());
+		hist->Draw("colz");
+
+		TLine* line = new TLine(log10(1),log10(1),log10(actual_max),log10(actual_max));
+		line->SetLineStyle(9);
+		line->SetLineColor(kMagenta);
+		line->SetLineWidth(2);
+		line->Draw("same");
+
+		if (save_images) {
+			fs::path save_name = filepath->GetRunIdentifier()
+			                     + "_ChargeVariation"
+			                     + ".png";
+			fs::path save_path = filepath->GetOutputDirectory() / save_name;
+			filepath->CreateOutputDirectory();
+			canvas->SaveAs(save_path.c_str());
+				COUTP("[file][output] " << save_path);
+			canvas->Clear("D");
+		}
+	}
+	END();
+}

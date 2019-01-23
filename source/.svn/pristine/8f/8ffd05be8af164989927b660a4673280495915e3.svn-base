@@ -1,0 +1,164 @@
+//
+// Created by Jason Watson on 18/09/15.
+//
+
+#include "Entry.h"
+
+uint32_t Entry::s_nIDGenerator = 0;
+uint32_t Entry::s_max_event = 0;
+uint32_t Entry::s_num_entries = 0;
+string Entry::s_investigation = "";
+map<string,float> Entry::s_branch_value_min;
+map<string,float> Entry::s_branch_value_max;
+
+void Entry::Reset() {
+	m_event = 0;
+	m_source_event = 0;
+	m_event_timestamp = 0;
+	m_pixel = 0;
+	m_pulse_height = 0;
+	m_pulse_area = 0;
+	m_pulse_position = 0;
+	m_true_npe = 0;
+
+	m_branch_value.clear();
+	m_eventid_set.clear();
+}
+
+void Entry::ResetStatic() {
+	s_nIDGenerator = 0;
+	s_branch_value_max.clear();
+	s_branch_value_min.clear();
+	s_investigation = "";
+	s_num_entries = 0;
+	s_max_event = 0;
+}
+
+void Entry::parse_txt_file_line(string txt_file_line) {
+	std::istringstream iss(txt_file_line);
+	string context;
+	iss >> context;
+	iss >> s_investigation;
+	iss >> m_source_event;
+	iss >> m_event_timestamp;
+	iss >> m_pixel;
+	iss >> m_pulse_height;
+	iss >> m_pulse_area;
+	iss >> m_pulse_position;
+	iss >> m_true_npe;
+	if (m_eventid_set.insert(GetSourceEvent()).second) {
+		m_event = s_nIDGenerator++;
+	}
+}
+
+
+void Entry::SetOutputReadhessTTreeBraches(TTree *&output_TTree) {
+	output_TTree->Branch("fInvestigation", &s_investigation, "fInvestigation/C");
+	output_TTree->Branch("fEventIndex", &m_event, "fEventIndex/i");
+	output_TTree->Branch("fSourceEventIndex", &m_source_event, "fEventIndex/i");
+	output_TTree->Branch("fEventTimestamp", &m_event_timestamp, "fEventTimestamp/l");
+	output_TTree->Branch("fPixelId", &m_pixel, "fPixelId/I");
+	output_TTree->Branch("fPulseHeight", &m_pulse_height, "fPulseHeight/F");
+	output_TTree->Branch("fPulseArea", &m_pulse_area, "fPulseArea/F");
+	output_TTree->Branch("fPulsePosition", &m_pulse_position, "fPulsePosition/F");
+	output_TTree->Branch("fTrueNPE", &m_true_npe, "fTrueNPE/F");
+};
+
+
+
+void Entry::SetDefaultOxtoolsInputBranches(TTree *&input_TTree) {
+	cout << Print::Level() << "[ttree][event] Setting default event branch addresses" << endl;
+	input_TTree->SetBranchAddress("fEventIndex", &m_event);
+	input_TTree->SetBranchAddress("fEventTimestamp", &m_event_timestamp);
+	input_TTree->SetBranchAddress("fPixelId", &m_pixel);
+}
+
+void Entry::IncludeOxtoolInputBranch(TTree *&input_TTree, vector<string> branch_name_vector) {
+	for (string branch_name : branch_name_vector) {
+		cout << Print::Level() << "[ttree][event] Including event branch address: " << branch_name << endl;
+		if (!check_TTree_branch_exists(input_TTree, branch_name.c_str()))
+			throw std::invalid_argument("[ttree][error] Entry TTree does not contain branch");
+		input_TTree->SetBranchAddress(branch_name.c_str(), &m_branch_value[branch_name]);
+
+		s_branch_value_max[branch_name] = ((float) (input_TTree->GetMaximum(branch_name.c_str())));
+		cout << Print::Level() << "[ttree][event] Branch maximum set to: " << s_branch_value_max[branch_name] << endl;
+		s_branch_value_min[branch_name] = ((float) (input_TTree->GetMinimum(branch_name.c_str())));
+		cout << Print::Level() << "[ttree][event] Branch minimum set to: " << s_branch_value_min[branch_name] << endl;
+		if (s_branch_value_min[branch_name] < 0) {
+			cout << Print::Level() << "[ttree][event] Min branch value updated: " << s_branch_value_min[branch_name] << " -> " << 0 << endl;
+			s_branch_value_min[branch_name] = 0;
+		}  	// some outliers go below 0
+	}
+}
+
+void Entry::IncludeOxtoolInputBranch(TTree *&input_TTree, string branch_name) {
+	vector<string> branch_name_vector = {branch_name};
+	IncludeOxtoolInputBranch(input_TTree, branch_name_vector);
+}
+
+
+float Entry::GetBranchValue(string branch_name) {
+	if (m_branch_value.size()==0) return 0.0;
+	if (m_branch_value[branch_name] > s_branch_value_max[branch_name]) {
+		cout << "[DEBUG] Max branch value updated: " << s_branch_value_max[branch_name] << " -> " << m_branch_value[branch_name] << endl;
+		s_branch_value_max[branch_name] = m_branch_value[branch_name]; // Sometimes ->GetMaximum doesn't work
+	}
+	if (m_branch_value[branch_name] < s_branch_value_min[branch_name] && m_branch_value[branch_name] > 0) {
+		cout << "[DEBUG] Min branch value updated: " << s_branch_value_min[branch_name] << " -> " << m_branch_value[branch_name] << endl;
+		s_branch_value_min[branch_name] = m_branch_value[branch_name];
+	}
+	return m_branch_value[branch_name];
+}
+
+void Entry::SetTTreeNum(TTree *input_TTree) {
+	s_max_event = (uint32_t) (input_TTree->GetMaximum("fEventIndex"));
+	s_num_entries = (uint32_t) input_TTree->GetEntries();
+	if (s_num_entries == 0) throw std::invalid_argument("[ttree][error] Pixel TTree is empty!");
+	cout << Print::Level() << "[ttree][event] Max event set to: " << s_max_event << endl;
+	cout << Print::Level() << "[ttree][event] Number of event entries set to: " << s_num_entries << endl;
+}
+
+vector<vector<Entry>> GetOxtoolEntryArray(TTree *event_ttree,
+                                          string branch_name) {
+	vector<string> branch_name_vector = {branch_name};
+	vector<vector<Entry>> event_vector(Entry::GetMaxEvent()+1,
+	                                          vector<Entry>((unsigned long) Pixel::s_max_pixel+1));
+	event_vector = GetOxtoolEntryArray(event_ttree, branch_name_vector);
+	return event_vector;
+}
+
+vector<vector<Entry>> GetOxtoolEntryArray(TTree *event_ttree,
+                                          vector<string> branch_name_vector) {
+	Print::FunctionStart();
+	cout << Print::Level() << "[ttree][event] Building event vector from TTree" << endl;
+	assert(Pixel::s_num_entries>0); //Pixel class must be set-up
+
+	// Create object and assign adresses for TTree branches
+	Entry event_holder;
+	event_holder.SetTTreeNum(event_ttree);
+	event_holder.SetDefaultOxtoolsInputBranches(event_ttree);
+	event_holder.IncludeOxtoolInputBranch(event_ttree,branch_name_vector);
+
+	// Create three dimension vector for events: [events][pixels][timeslices]
+	vector<vector<Entry>> event_vector(Entry::GetMaxEvent()+1,
+	                                          vector<Entry>((unsigned long) Pixel::s_max_pixel+1));
+
+	// Bool vector to specify entry has already been entered
+	vector<vector<bool>> bool_entry_vector(Entry::GetMaxEvent()+1,
+	                                       vector<bool>((unsigned long) Pixel::s_max_pixel+1));
+
+	Progress progress(Entry::GetNumEntries());
+	// Fill event information
+	for (uint32_t i = 0; i < Entry::GetNumEntries(); i++) {
+		progress.Print(i);
+		event_ttree->GetEntry(i);
+
+		// Make sure and entry does not already exists (temp fix for unresponsive module filling 0)
+		if (!bool_entry_vector[event_holder.GetEvent()][event_holder.GetPixel()]) {
+			event_vector[event_holder.GetEvent()][event_holder.GetPixel()] = event_holder;
+			bool_entry_vector[event_holder.GetEvent()][event_holder.GetPixel()] = true;
+		}
+	}
+	Print::FunctionEnd();
+	return event_vector;
+}

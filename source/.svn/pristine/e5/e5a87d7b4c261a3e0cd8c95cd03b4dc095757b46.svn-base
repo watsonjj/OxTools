@@ -1,0 +1,48 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#ifndef OXTOOLS_CAMERA_H
+#define OXTOOLS_CAMERA_H
+
+#include <initialise.h>
+#include <Event.h>
+#include <Pixel.h>
+
+typedef map<int, Event> map_int_Event_t;
+typedef map<int, Pixel> map_int_Pixel_t;
+
+class Camera {
+private:
+	 int mCameraId;
+	 uint32_t mNumEvents;
+	 int mNumPixels;
+	 int mNumRows;
+	 int mNumColumns;
+	 int mNumModules;
+	 int mNumModulePixels;
+	 map<int,Event> mEventMap;
+	 map<int,Pixel> mPixelMap;
+
+	 void Init();
+	 void AddEventEntry(const Entry &entry_holder);
+	 void AddPixelEntry(const Pixel &pixel_holder);
+
+public:
+	 friend class Run;
+	 Camera() { Init();};
+
+	 GET(CameraId, CameraId, int);
+	 GET(NumEvents, NumEvents, uint32_t);
+	 GET(NumPixels, NumPixels, int);
+	 GET(NumRows, NumRows, int);
+	 GET(NumColumns, NumColumns, int);
+	 GET(NumModules, NumModules, int);
+	 GET(NumModulePixels, NumModulePixels, int);
+	 GETCREF(EventMap, EventMap, map_int_Event_t);
+	 GETCREF(PixelMap, PixelMap, map_int_Pixel_t);
+	 GETMAPCONTENTREF(Event, Event, Event, int);
+	 GETMAPCONTENTREF(Pixel, Pixel, Pixel, int);
+};
+
+#endif //OXTOOLS_CAMERA_H

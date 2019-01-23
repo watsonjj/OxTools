@@ -1,0 +1,69 @@
+//
+// Created by Jason Watson on 16/09/15.
+//
+
+#ifndef OXTOOLS_PIXEL_H
+#define OXTOOLS_PIXEL_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Pixel {
+private:
+public:
+	 int m_pixel;
+	 int m_module;
+	 int m_module_pixel;
+	 int m_module_pixel_slot;
+	 float m_xpix;
+	 float m_ypix;
+	 float m_zpix;
+	 int m_row;
+	 int m_column;
+
+	 static int s_max_pixel;
+	 static int s_num_entries;
+	 static int s_max_row;
+	 static int s_max_column;
+
+	 Pixel() {
+		 Reset();
+	 }
+
+	 Pixel(string txt_file_line) {
+		 ParseTxtFileLine(txt_file_line);
+	 }
+
+	 void Reset();
+	 static void ResetStatic();
+	 void SetOutputTTreeBranches(TTree *&output_TTree);
+	 void ParseTxtFileLine(string txt_file_line);
+	 void SetInputTTreeBraches(TTree *&input_tree);
+	 void SetTTreeNum(TTree *input_TTree);
+
+		 bool operator <(const Pixel& other) const {
+		 return m_pixel < other.m_pixel;
+	 }
+
+	 struct ByRow
+	 {
+		  bool operator ()( const Pixel &a, const Pixel &b ) const
+		  {
+			  return a.m_row < b.m_row;
+		  }
+	 };
+
+	 struct ByColumn
+	 {
+		  bool operator ()( const Pixel &a, const Pixel &b ) const
+		  {
+			  return a.m_column < b.m_column;
+		  }
+	 };
+
+};
+
+vector<Pixel> GetOxtoolPixelVector(TTree* input_ttree);
+
+
+#endif //OXTOOLS_PIXEL_H

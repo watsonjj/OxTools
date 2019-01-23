@@ -1,0 +1,45 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Event.h>
+#include <Camera.h>
+
+void Event::Init() {
+	mEventIndex = 0;
+	mBranchValueMinMap.clear();
+	mBranchValueMaxMap.clear();
+	mEntryMap.clear();
+	mCameraImage = NULL;
+}
+
+void Event::AddEntry(const Entry &entry_holder) {
+	mEntryMap.insert(std::map<int, Entry>::value_type (entry_holder.mPixelId,entry_holder));
+	mEventIndex = entry_holder.GetEventId();
+	mSourceEventId = entry_holder.GetSourceEventId();
+	for (const auto &branch_pair : entry_holder.mBranchValueMap) {
+		const auto branch_name = branch_pair.first;
+		const auto branch_value = branch_pair.second;
+		if (!mBranchValueMinMap.count(branch_name) || mBranchValueMinMap[branch_name] > branch_value) {
+			mBranchValueMinMap[branch_name] = branch_value;
+		}
+		if (!mBranchValueMaxMap.count(branch_name) || mBranchValueMaxMap[branch_name] < branch_value)
+			mBranchValueMaxMap[branch_name] = branch_value;
+	}
+}
+
+TH2F* Event::GetCameraImage(string branch_name){
+	if (!mCameraImage) {
+		mCameraImage = (TH2F *) pCamera->GetBaseCameraTH2F()->Clone("rCameraImage");
+		mCameraImage->GetZaxis()->SetTitle(branch_name.c_str());
+		for (auto &entry_pair : mEntryMap) {
+			auto &entry = entry_pair.second;
+			int pixel_id = entry.GetPixelId();
+			int row = pCamera->GetPixel(pixel_id).GetRow();
+			int column = pCamera->GetPixel(pixel_id).GetColumn();
+			float bin_content = entry.GetBranchValue(branch_name);
+			mCameraImage->SetBinContent(column + 1, row + 1, bin_content);
+		}
+	}
+	return mCameraImage;
+}

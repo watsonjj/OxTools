@@ -1,0 +1,42 @@
+//
+// Created by Jason Watson on 16/09/15.
+//
+
+#ifndef OXTOOLS_PIXEL_H
+#define OXTOOLS_PIXEL_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Pixel {
+private:
+public:
+	 int m_pixel;
+	 int m_module;
+	 int m_module_pixel;
+	 int m_module_pixel_slot;
+	 float m_xpix;
+	 float m_ypix;
+	 float m_zpix;
+	 int m_row;
+	 int m_column;
+
+	 Pixel() {
+		 Reset();
+	 }
+
+	 Pixel(string txt_file_line) {
+		 ParseTxtFileLine(txt_file_line);
+	 }
+
+	 void Reset();
+	 void SetOutputTTreeBranches(TTree *&output_TTree);
+	 void ParseTxtFileLine(string txt_file_line);
+	 void SetInputTTreeBranches(TTree *&input_tree);
+
+	 bool operator <(const Pixel& other) const {
+		 return m_pixel < other.m_pixel;
+	 }
+};
+
+#endif //OXTOOLS_PIXEL_H

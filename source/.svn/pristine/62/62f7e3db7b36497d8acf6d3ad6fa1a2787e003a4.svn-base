@@ -1,0 +1,191 @@
+//
+// Created by Jason Watson on 10/09/15.
+//
+
+/* TODO ideas:
+ * put all pixels with event number into histogram, then extract from histogram
+ * OR each branch is an array of 2048
+ * seperate timeslice ttree, each branch is an event
+ * OR timeslices are included through an extra dimension on the array
+ * array of branch_values
+ * branch_values of other types??? (maybe not needed)
+ * option to print list of branches
+ * difference betweeen corsika event, and event index, which should user call? which should display?
+ * make seperate plotter for timeslices?
+ * change  Event::s_max_event to be a oxtool-set id, to avoid missing
+*/
+
+#include <camera_image_plotter.h>
+
+void camera_image_plotter(Filepaths filepaths, string branch_name,
+                          uint32_t event_requested,
+                          bool all_events, bool save_images) {
+
+	Print::FunctionStart();
+
+	//Open tree from root file
+	cout << Print::Level() << "[file] Opening input file: " << filepaths.GetInput() << endl;
+	TFile *rootFile = new TFile(filepaths.GetInput().c_str(), "READ");
+	cout << Print::Level() << "[ttree] Opening OxTools TTrees" << endl;
+	TTree *event_ttree = (TTree *) rootFile->Get("event");
+	TTree *pixel_ttree = (TTree *) rootFile->Get("pixel");
+
+	// Build vectors from TTree, pixel must go first
+	vector<Pixel> pixel_vector = GetOxtoolPixelVector(pixel_ttree);
+	vector<vector<Event>> branch_value_vector = GetOxtoolEventArray(event_ttree, branch_name);
+
+	// Make sure event requested is within available events
+	if (event_requested > Event::GetMaxEvent()) {
+		throw std::invalid_argument("[ttree] Event number is outside of event range");
+	}
+
+//	event_ttree->GetEntry(0); // Get an example entry
+
+	// Create canvas
+	cout << Print::Level() << "[canvas] Creating canvas" << endl;
+	TCanvas *Cc1 = new TCanvas("Cc1", "Cc1", 1000, 1000);
+	TPad *Ppad1 = (TPad *) Cc1->GetPad(0);
+	Ppad1->SetRightMargin(0.15);
+
+	// Create Histograms
+	cout << Print::Level() << "[TH2] Creating camera_image histograms" << endl;
+	TH2F* Hhist0 = base_TH2F_builder();
+	TH2F *Hcamera_image = (TH2F *) Hhist0->Clone("Hcamera_image");
+	TH2F *Hcamera_pixels = (TH2F *) Hhist0->Clone("Hcamera_pixels");
+
+	// Setup Histograms
+	Hcamera_image->SetTitle("Camera Image");
+	Hcamera_image->GetZaxis()->SetTitle(branch_name.c_str());
+	Hcamera_image->GetZaxis()->SetRangeUser(Event::GetBranchMin(branch_name), Event::GetBranchMax(branch_name));
+	Hcamera_pixels->SetTitle("Camera Pixels");
+	Hcamera_pixels->SetMarkerSize(0.3);
+
+	// Create Pixel Outlines
+	vector<TLine *> line_vector = pixel_outlines(pixel_vector);
+
+	// Set up loop over required events and timeslices
+	int event_loop;
+	if (all_events) {
+		event_loop = Event::GetMaxEvent()+1;
+		filepaths.BuildOutput(".gif", "", "", "camera", branch_name);
+		fs::remove(filepaths.GetOutput()); // delete previous gif
+	}
+	else event_loop = event_requested + 1;
+
+	// Loop over events
+	Progress progress(event_loop);
+	if (all_events) cout << Print::Level() << "[TH2] Filling histograms with " << branch_name << endl;
+	Print::LevelIncrease();
+	for (int i= event_requested;i<event_loop;i++) {
+		if (!all_events) cout << Print::Level() << "[TH2] Filling histograms with " << branch_name
+		                 << " for event " << i << endl;
+		else progress.Print(i);
+		for (int k=0;k<Pixel::s_num_entries;k++) {
+			//Fill histogram with values
+			int row = pixel_vector[k].m_row;
+			int column = pixel_vector[k].m_column;
+			int pixel = pixel_vector[k].m_pixel;
+			Hcamera_image->SetBinContent(column + 1, row + 1, branch_value_vector[i][pixel].GetBranchValue(branch_name));
+			Hcamera_pixels->SetBinContent(column + 1, row + 1, pixel);
+		}
+
+		// Obtain filepath information
+		filepaths.BuildOutput(".pdf", std::to_string(i), "", "camera", branch_name);
+		if (all_events)
+			filepaths.BuildOutput(".gif+30", "", "", "camera", branch_name);
+		if (save_images)
+			filepaths.CreateOutputDirectory();
+
+		//Draw histograms
+		Hcamera_image->Draw("colz");
+//		Hcamera_pixels->Draw("same text");
+		for (TLine *line : line_vector) {
+			line->Draw("same");
+		}
+		Hcamera_image->SetTitle(Form("[IMAGE] Camera   [RUN] %s   [EVENT] %d", filepaths.GetRun().c_str(), i));
+
+		// Save image
+		if (save_images)
+			Cc1->SaveAs(filepaths.GetOutput().c_str());
+	}
+	Print::LevelDecrease();
+	if (all_events) {
+		filepaths.BuildOutput(".gif++60++", "", "", "camera", branch_name);
+		Cc1->SaveAs(filepaths.GetOutput().c_str());
+	}
+	Print::FunctionEnd();
+	Event::ResetStatic();
+	Pixel::ResetStatic();
+}
+
+TH2F* base_TH2F_builder() {
+
+	int num_rows = Pixel::s_max_row+1;
+	int num_columns = Pixel::s_max_column+1;
+
+	//Set up base histogram
+	TH2F *Hhist0 = new TH2F("base_histogram", "Base Histogram", num_columns, 0,
+	                        num_columns, num_rows, 0, num_rows);
+	Hhist0->GetXaxis()->SetLabelSize(0);
+	Hhist0->GetXaxis()->SetTickLength(0);
+	Hhist0->GetYaxis()->SetLabelSize(0);
+	Hhist0->GetYaxis()->SetTickLength(0);
+	Hhist0->SetStats(0);
+	Hhist0->GetZaxis()->SetLabelSize(0.03);
+	Hhist0->GetZaxis()->SetTitleOffset(1.2);
+
+	// Define gradient color palette
+	const Int_t NRGBs = 5;
+	const Int_t NCont = 255;
+	Double_t stops[NRGBs] = {0.00, 0.34, 0.61, 0.84, 1.00};
+	Double_t red[NRGBs] = {0.00, 0.00, 0.87, 1.00, 0.51};
+	Double_t green[NRGBs] = {0.00, 0.81, 1.00, 0.20, 0.00};
+	Double_t blue[NRGBs] = {0.51, 1.00, 0.12, 0.00, 0.00};
+	TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue, NCont);
+	gStyle->SetNumberContours(NCont);
+
+	return Hhist0;
+}
+
+
+
+vector<TLine*> pixel_outlines(vector<Pixel> pixel_vector) {
+	cout << Print::Level() << "[TH2] Creating pixel outlines for camera histogram" << endl;
+	int row, column;
+	TLine *line1, *line2, *line3, *line4;
+	std::vector<TLine *> line_vector;
+	for (Pixel pixel_increment : pixel_vector) {
+		if (pixel_increment.m_pixel != -1) {
+			row = pixel_increment.m_row;
+			column = pixel_increment.m_column;
+			line1 = new TLine(column, row, column, row + 1);
+			line2 = new TLine(column, row, column + 1, row);
+			line3 = new TLine(column + 1, row, column + 1, row + 1);
+			line4 = new TLine(column, row + 1, column + 1, row + 1);
+			if ((row + 1) % 8 == 0) { //TODO Hardcoded - make general
+				line4->SetLineColor(2);
+				line4->SetLineWidth(3);
+			}
+			if (row % 8 == 0) { //TODO Hardcoded - make general
+				line2->SetLineColor(2);
+				line2->SetLineWidth(3);
+			}
+			if ((column + 1) % 8 == 0) { //TODO Hardcoded - make general
+				line3->SetLineColor(2);
+				line3->SetLineWidth(3);
+			}
+			if (column % 8 == 0) { //TODO Hardcoded - make general
+				line1->SetLineColor(2);
+				line1->SetLineWidth(3);
+			}
+			line_vector.push_back(line1);
+			line_vector.push_back(line2);
+			line_vector.push_back(line3);
+			line_vector.push_back(line4);
+		}
+		else {
+			cout << "[DEBUG] Pixel id == -1" << endl;
+		}
+	}
+	return line_vector;
+}

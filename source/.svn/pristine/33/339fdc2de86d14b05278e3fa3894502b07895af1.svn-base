@@ -1,0 +1,36 @@
+//
+// Created by Jason Watson on 04/11/15.
+//
+
+#ifndef OXTOOLS_HILLASPARAMETER_H
+#define OXTOOLS_HILLASPARAMETER_H
+
+#include <initialise.h>
+
+class HillasParameter {
+public:
+	 HillasParameter();
+
+	 GETSETREF(NPixels, NPixels, std::size_t);
+	 GETSETREF(Intensity, Intensity, float);
+	 GETSETREF(Length, Length, float);
+	 GETSETREF(Width, Width, float);
+	 GETSETREF(Alpha, Alpha, float);
+//	 GETSETREF(CenterOfGravity, CenterOfGravity, Coordinate);
+
+	 void print(std::ostream& pOStream) const;
+
+private:
+	 std::size_t mNPixels;  // pixels in image
+	 float mIntensity;      // photo electrons in imageF
+	 float mLength;         // length of ellipse
+	 float mWidth;          // width of ellipse
+	 float mAlpha;          // angle of major ellipse axis with respect to x-axis
+//	 Coordinate mCenterOfGravity;  // center of gravity of ellipse
+};
+
+typedef boost::shared_ptr<HillasParameter> HillasParameter_ptr;
+typedef boost::shared_ptr<const HillasParameter> HillasParameter_cptr;
+
+
+#endif //OXTOOLS_HILLASPARAMETER_H

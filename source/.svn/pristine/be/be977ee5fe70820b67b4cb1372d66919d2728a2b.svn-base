@@ -1,0 +1,62 @@
+#include <Filepaths.h>
+#include <oxtools_ttree_creator.h>
+
+
+int main(int argc, char *argv[]) {
+	START()
+	string help_message = Form(
+"%s [-f {input_filepaths}] [OPTIONS]                                            \n"
+"  -- convert txt file containing camera events into a TTree inside a root file \n\n"
+"Options:        Arguments:        Description:                                 \n"
+" -h | --help                       show the help text                          \n"
+" -f              [input_filepaths]  path to the txt files (accepts wildcards)  \n"
+" -d                                delete the txt file after root file creation\n",
+argv[0]);
+
+	// Define variables
+	set<fs::path> input_filepath_set;
+	bool delete_txt = false;
+
+	// Create flags for required inputs
+	bool input_filepath_f = false;
+
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			std::cout << help_message << endl;
+			exit(0);
+		}
+		if (strcmp(argv[i], "-f") == 0) {
+			while(i+1 < argc && string(argv[i + 1]).find("-") != 0) {
+				input_filepath_set.insert(argv[i + 1]);
+				input_filepath_f = true;
+				i++;
+			}
+		}
+		else if (strcmp(argv[i], "-d") == 0) {
+			delete_txt = true;
+		}
+	}
+	if (!input_filepath_f) {
+		std::cout << Print::Level() << "[arg][error] Required argument not specified: [input_filepath]" << endl;
+		std::cout << help_message << endl;
+		return 1;
+	}
+
+	Print::LevelIncrease();
+	for (fs::path path : input_filepath_set) {
+
+		// Define paths
+		Filepaths filepaths(path);
+
+		// Run command
+		oxtools_ttree_creator(filepaths);
+		if (delete_txt) {
+			cout << Print::Level() << "[file] Deleting input txt file: " << filepaths.GetInput() <<
+			endl;
+			fs::remove(filepaths.GetInput());
+		}
+	}
+	Print::LevelDecrease();
+	END();
+	return 0;
+}

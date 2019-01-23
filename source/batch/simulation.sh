@@ -1,0 +1,11 @@
+#!/bin/bash
+
+parallel_sim() {
+	cd ~/Software/OxTools/build/bin
+	output_dir=~/Software/outputs/simulation/
+	output_name="simulation_$1_photon"
+	./run_simulation -P $1 -n 100 -R ${output_dir}${output_name}.ox.root -f ~/Software/outputs/readhess/neighbour_r1_c1_rc2_m1.txt &>${output_dir}${output_name}_progress.txt
+}
+export -f parallel_sim
+#seq -s'\n' 1 10 | parallel --bar --joblog ~/Software/outputs/simulation/log.txt parallel_sim
+parallel --delay 2 --bar --joblog ~/Software/outputs/simulation/log.txt parallel_sim ::: 1 2 3 4 5 6 7 8 9 10 20 30 40 50 60 70 80 90 100

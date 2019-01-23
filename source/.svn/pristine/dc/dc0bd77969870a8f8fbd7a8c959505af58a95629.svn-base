@@ -1,0 +1,105 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Event.h>
+#include <Run.h>
+
+
+void Event::Init() {
+	mEventIndex = 0;
+	mBranchValueMinMap.clear();
+	mBranchValueMaxMap.clear();
+	mEntryMap.clear();
+	mCameraImage = NULL;
+	mHillasParameter = NULL;
+	mBranchSquaresMap.clear();
+}
+
+void Event::AddEntry(const Entry &entry_holder) {
+	mEntryMap.insert(std::map<int, Entry>::value_type (entry_holder.mPixelId,entry_holder));
+	mEventIndex = entry_holder.GetEventId();
+	mSourceEventId = entry_holder.GetSourceEventId();
+	for (const auto &branch_pair : entry_holder.mBranchValueMap) {
+		const auto branch_name = branch_pair.first;
+		const auto branch_value = branch_pair.second;
+		if (!mBranchValueMinMap.count(branch_name) || mBranchValueMinMap[branch_name] > branch_value) {
+			mBranchValueMinMap[branch_name] = branch_value;
+		}
+		if (!mBranchValueMaxMap.count(branch_name) || mBranchValueMaxMap[branch_name] < branch_value)
+			mBranchValueMaxMap[branch_name] = branch_value;
+		if (!mBranchValueMaxMap.count(branch_name))
+			mBranchSquaresMap[branch_name] = 0;
+		mBranchSquaresMap[branch_name] += branch_value*branch_value;
+		mBranchRMSMap[branch_name] = powf((mBranchSquaresMap[branch_name]/mEntryMap.size()),0.5);
+	}
+}
+
+//this calculates the RMS intensity to potentially use with the tailcuts equations
+//double Event::calculate_RMS (string branch_name)
+//{
+//	double RMS = 0;
+//	double squares = 0;
+//	int entries_counter = 0;
+//	for (auto &entry_pair : mEntryMap) {
+//		auto &entry = entry_pair.second;
+//		double pixel_value = entry.GetBranchValue(branch_name);
+//		squares += pixel_value * pixel_value;
+//		entries_counter++;
+//	}
+//
+//	RMS = pow((squares/entries_counter),0.5);
+//	return RMS;
+//}
+
+
+void Event::Tailcut(double pixel_threshold, double neighbor_threshold, string branch_name, bool rms_f) {
+	std::pair<float,float> tailcut = std::make_pair(pixel_threshold,neighbor_threshold);		//TODO: this is what needs to be pixel threshold neighbor threshold
+	if (rms_f) tailcut = std::make_pair(pixel_threshold*mBranchRMSMap[branch_name],neighbor_threshold*mBranchRMSMap[branch_name]);
+	vector<int> remove_entries;
+	for (auto &entry_pair : mEntryMap) {
+		auto &entry = entry_pair.second;
+		int pixel_id = entry.GetPixelId();
+		float pixel_value = entry.GetBranchValue(branch_name);
+		set<int> neighbours = pCamera->GetNeighbouringPixels(pixel_id);
+		float neighbour_sum = 0;
+		for (int n : neighbours) {
+			if (mEntryMap.count(n)) {
+				neighbour_sum += mEntryMap[n].GetBranchValue(branch_name);
+			}
+		}
+		if (pixel_value < tailcut.first) {
+			if (neighbour_sum < tailcut.second) {
+				remove_entries.push_back(pixel_id);
+			}
+		}
+	}
+	for (int pixel_id : remove_entries) {
+		mEntryMap.erase(pixel_id);
+		pCamera->GetRun()->RemoveFromBoolEntryMap(pCamera->GetCameraId(),GetEventIndex(),pixel_id);
+	}
+}
+
+TH2F* Event::GetCameraImage(string branch_name){
+	if (!mCameraImage) {
+		mCameraImage = (TH2F *) pCamera->GetBaseCameraTH2F()->Clone("rCameraImage");
+		mCameraImage->GetZaxis()->SetTitle(branch_name.c_str());
+		for (auto &entry_pair : mEntryMap) {
+			auto &entry = entry_pair.second;
+			int pixel_id = entry.GetPixelId();
+			double X = pCamera->GetPixel(pixel_id).GetXpix();
+			double Y = pCamera->GetPixel(pixel_id).GetYpix();
+			float bin_content = entry.GetBranchValue(branch_name);
+			int bin = mCameraImage->FindBin(X, Y);
+			mCameraImage->SetBinContent(bin , bin_content);
+		}
+	}
+	return mCameraImage;
+}
+
+HillasParameter* Event::GetHillasParameter(string branch_name) {
+	//taking out the if (!mHillasParameter) because it doesn't allow for the calculation of two sets of hillas parameters in the same go
+
+	mHillasParameter = new HillasParameter(this, branch_name);
+	return mHillasParameter;
+}

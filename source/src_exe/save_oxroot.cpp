@@ -1,0 +1,102 @@
+#include "Filepath.h"
+
+int main(int argc, char *argv[]) {
+	START()
+	string help_message = Form(
+"%s [-f {input_filepaths}] [OPTIONS]                                            \n"
+"  -- convert file containing camera events into a OxRoot file                  \n\n"
+"Options:        Arguments:        Description:                                 \n"
+" -h | --help                       show the help text                          \n"
+" -f              [input_filepaths]  path to the input files (accepts wildcards)\n"
+" -T              [t1 t2]             conduct tailcuts on the events              \n"
+"                                       t1 = pixel threshold, t2 = neighbours     \n"
+" -b              [branch_name]       name of the branch to perform tailcuts with \n"
+" -R                                  tailcuts are multiplied by the rms of the   \n"
+"                                       image                                     \n"
+" -D                                delete the input file afterwards            \n",
+argv[0]);
+
+	// Define variables
+	set<fs::path> input_filepath_set; // TODO: fix multiple file input
+	bool delete_input = false;
+	std::pair<float,float> tailcut_values;
+	tailcut_values.first=0;
+	tailcut_values.second=0;
+	bool rms = false;
+	string branch_name;
+
+	// Create flags for required inputs
+	bool input_filepath_f = false;
+	bool tailcut_f = false;
+	bool branch_name_f = false;
+
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			cout << help_message << endl;
+			exit(0);
+		}
+		if (strcmp(argv[i], "-f") == 0) {
+			while(i+1 < argc && string(argv[i + 1]).find("-") != 0) {
+				input_filepath_set.insert(argv[i + 1]);
+				input_filepath_f = true;
+				i++;
+			}
+		}
+		if (strcmp(argv[i], "-b") == 0) {
+			if (i + 1 != argc) {
+				branch_name = argv[i + 1];
+				branch_name_f = true;
+			}
+		}
+		if (strcmp(argv[i], "-D") == 0) {
+			delete_input = true;
+		}
+		if (strcmp(argv[i], "-T") == 0) {
+			if (i + 1 != argc) {
+				tailcut_values.first = (float) atoi(argv[i + 1]);
+				tailcut_values.second = (float) atoi(argv[i + 2]);
+				tailcut_f = true;
+			}
+		}
+		if (strcmp(argv[i], "-R") == 0) {
+			rms = true;
+		}
+	}
+	if (!input_filepath_f) {
+		COUTP("[arg][error] Required argument not specified: [input_filepath]");
+		cout << help_message << endl;
+		return 1;
+	}
+	if (tailcut_f && !branch_name_f) {
+		std::cout << Print::Level() << "[arg][error] Required argument not specified: [branch_name]" << endl;
+		std::cout << help_message << endl;
+		return 1;
+	}
+
+	for (fs::path path : input_filepath_set) {
+		auto filepath = FilepathLoader::Load(path);
+		if (filepath->IsOx() && !tailcut_f)
+			continue;
+		else {
+			Run_ptr run = filepath->Read();
+			fs::path output = filepath->GetOutputOxrootFilepath();
+			if (tailcut_f) {
+				run->Tailcut(tailcut_values.first, tailcut_values.second, branch_name, rms);
+				std::stringstream t1SS, t2SS;
+				t1SS << tailcut_values.first;
+				t2SS << tailcut_values.second;
+				string timesliceS = "_timeslice" + t1SS.str() + "-" + t2SS.str();
+				if (rms) timesliceS += "RMS";
+				string output_name = filepath->GetRunIdentifier() + timesliceS + ".ox.root";
+				output = filepath->GetInputDirectory() / output_name;
+			}
+			run->Write(output);
+			if (delete_input) {
+				fs::remove(filepath->GetInput());
+				COUTP("[file][input][deleted]");
+			}
+		}
+	}
+	END();
+	return 0;
+}

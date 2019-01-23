@@ -1,0 +1,126 @@
+//
+// Created by Jason Watson on 20/09/15.
+//
+
+#include <oxtools_ttree_creator.h>
+
+
+void oxtools_ttree_creator(Filepaths &filepaths, string investigation) {
+	Entry::SetInvestigation(investigation);
+
+	START();
+
+	// Set up output filepath
+	filepaths.BuildOutput(".", filepaths.GetRunIdentifier(), ".ox.root");
+	filepaths.CreateOutputDirectory();
+
+	// Open output file
+	COUTP("[file][output] " << filepaths.GetOutput());
+	TFile *output_root_file = new TFile(filepaths.GetOutput().c_str(), "RECREATE");
+
+	// Create TTrees
+	TTree *output_event_TTree = new TTree("event", "OxTool TTree containing event data");
+	TTree *output_pixel_TTree = new TTree("pixel", "OxTool TTree containing pixel data");
+
+	// Create holder objects for input to TTree
+	Entry event_holder;
+	Pixel pixel_holder;
+
+	// Set ttree addresses
+	event_holder.SetOutputReadhessTTreeBranches(output_event_TTree);
+	pixel_holder.SetOutputTTreeBranches(output_pixel_TTree);
+
+	// Determine if parsing of a readhess text file, or converting of a libCHEC ttree is required
+	if (strcmp(filepaths.GetInputExtension().c_str(),".txt") == 0) {
+		COUTP("[file][input] readhess");
+		string line;
+		std::ifstream file;
+		COUTP("[file][input] " << filepaths.GetInput());
+		file.open(filepaths.GetInput().c_str());
+
+		int data_other_entry_flag = false;
+		Progress progress(get_file_size(filepaths.GetInput()),
+		                                "Parsing input file and filling TTrees : ");
+		while(!file.eof()) {
+			progress.AppendPrint(line.length());
+			getline(file, line);
+			if (line.find("CONTENTS") != string::npos) {
+				continue;
+			}
+			else if (line.find("!OX-PIXEL") != string::npos) {
+				pixel_holder.ParseTxtFileLine(line);
+				output_pixel_TTree->Fill();
+			}
+			else if (line.find("!OX-DATA") != string::npos) {
+				if (line.find(Entry::GetInvestigation()) != string::npos) {
+					event_holder.parse_txt_file_line(line);
+					output_event_TTree->Fill();
+				}
+				else if (!data_other_entry_flag) {
+					COUTP("[file][warning] Multiple investigations inside txt file "
+							          "- Current investigation: " << Entry::GetInvestigation());
+					data_other_entry_flag = true;
+				}
+			}
+		}
+		COUTP("[ttree][event][investigation] " << Entry::GetInvestigation());
+		file.close();
+	}
+	else if (strcmp(filepaths.GetInputExtension().c_str(),".root") == 0) {
+		TFile *rootFile = new TFile(filepaths.GetInput().c_str(), "READ");
+		if (rootFile->GetListOfKeys()->Contains("camera_data")) {
+			COUTP("[file][input] libCHEC");
+			TTree *input_tree = (TTree *) rootFile->Get("camera_data");
+			Long64_t nentries = input_tree->GetEntries();
+
+			// Setup filler for pixel ttree
+			Pixel pixel_libchec_holder;
+			pixel_libchec_holder.SetInputTTreeBranches(input_tree);
+
+			// Create set to store unique pixels in
+			set<Pixel> pixel_set;
+
+			Progress progress(nentries, "Filling pixel positions : ");
+			for (int i = 0; i < nentries; i++) {
+				progress.Print(i);
+				input_tree->GetEntry(i);
+				pixel_set.insert(pixel_libchec_holder);
+			}
+
+			// Add row and column information
+			int num_pixels = (int) (input_tree->GetMaximum("fPixelId") + 1);
+			pixel_set = define_rows_and_columns(pixel_set, num_pixels);
+
+			// Fill pixel ttree
+			for (Pixel pixel_iter : pixel_set) {
+				pixel_holder = pixel_iter; // ??? Copies to address of pixel_holder?
+				output_pixel_TTree->Fill();
+			}
+
+			// Clone the tree to get events
+			COUTP("[ttree][libchec] Cloning...");
+			input_tree->SetBranchStatus("fModuleId",0);
+			input_tree->SetBranchStatus("fModulePixelSlot",0);
+			input_tree->SetBranchStatus("fPixelX",0);
+			input_tree->SetBranchStatus("fPixelY",0);
+			input_tree->SetBranchStatus("fPixelZ",0);
+			output_root_file->cd();
+			output_event_TTree = input_tree->CloneTree(nentries);
+			output_event_TTree->SetName("event");
+		}
+		else {
+			throw std::invalid_argument("[file][error] Root file is not libCHEC format!");
+		}
+	}
+	else {
+		throw std::invalid_argument("[file][error] Input file incorrect!");
+	}
+
+	output_root_file->cd();
+	output_event_TTree->Write();
+	output_pixel_TTree->Write();
+	output_root_file->Close();
+
+	END();
+	Entry::ResetStatic();
+}

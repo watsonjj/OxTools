@@ -1,0 +1,61 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+#ifndef OXTOOLS_FILEPATHS_H
+#define OXTOOLS_FILEPATHS_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Filepaths {
+private:
+	 fs::path m_input;
+	 fs::path m_input_name;
+	 fs::path m_input_directory;
+	 fs::path m_input_stem;
+	 fs::path m_input_extension;
+	 fs::path m_output;
+	 fs::path m_output_name;
+	 fs::path m_output_directory;
+
+	 string m_run_number;
+	 string m_run_identifier;
+	 string m_event;
+	 string m_timeslice;
+	 string m_extension;
+	 string m_type;
+	 string m_branch;
+	 bool m_isox;
+
+	 Filepaths() { }
+	 void SetInput(fs::path input);
+	 void SetOutput(fs::path output);
+	 void SetRun();
+	 void SetEvent(string event);
+	 void SetTimeslice(string timeslice);
+	 void SetExtension(string extension, string type = "", string branch = "");
+	 void AppendFilenameDirectory(fs::path &output);
+	 void AppendEventDirectory(fs::path &output);
+	 void AppendOutputName(fs::path &output);
+
+public:
+	 Filepaths(fs::path input_filepath);
+	 void Init(fs::path input);
+	 void BuildOutput(string extension, string event = "", string timeslice = "", string type = "", string branch = "");
+	 void BuildCustomOutput(string subdirectory, string name, string extension, fs::path directory = "");
+	 void CreateOutputDirectory();
+
+		 fs::path GetInput() {return m_input;}
+	 fs::path GetInputExtension() {return m_input_extension;}
+	 fs::path GetInputName() {return m_input_stem;}
+	 fs::path GetOutput() {return m_output;}
+	 fs::path GetRun() {return m_run_number;}
+
+	 bool IsOx() {return m_isox;}
+};
+
+
+
+
+#endif //OXTOOLS_FILEPATHS_H

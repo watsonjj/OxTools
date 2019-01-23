@@ -1,0 +1,106 @@
+//
+// Created by Jason Watson on 18/02/2016.
+//
+
+#ifndef OXTOOLS_CHARGERESOLUTION_H
+#define OXTOOLS_CHARGERESOLUTION_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Run;
+
+class ChargeResolutionBenchmarks {
+	 friend class ChargeResolution;
+private:
+	 int mMaxNPE;
+	 map<int,double> mRequirementMap;
+	 map<int,double> mGoalMap;
+	 map<int,double> mPoissonMap;
+	 map<int,double> mScaleMap;
+	 map<double,double> mRequirementMapLog;
+	 map<double,double> mGoalMapLog;
+	 map<double,double> mPoissonMapLog;
+	 map<double,double> mScaleMapLog;
+	 int mScaleMax;
+	 double mScaleMaxLog;
+	 TGraph* mRequirementGraph;
+	 TGraph* mRequirementScaledGraph;
+	 TGraph* mGoalGraph;
+	 TGraph* mGoalScaledGraph;
+	 TGraph* mPoissonGraph;
+	 TGraph* mPoissonScaledGraph;
+
+	 void SetRequirementMap();
+	 void SetGoalMap();
+	 void SetPoissonMap();
+	 void SetRequirementGraph();
+	 void SetGoalGraph();
+	 void SetPoissonGraph();
+
+public:
+	 ChargeResolutionBenchmarks (int max_npe) : mMaxNPE(max_npe)
+	 {
+		 SetRequirementMap();
+		 SetGoalMap();
+		 SetPoissonMap();
+		 mScaleMap = mGoalMap;
+		 mScaleMax = (*std::max_element(std::begin(mScaleMap), std::end(mScaleMap))).first;
+		 mScaleMapLog = mGoalMapLog;
+		 mScaleMaxLog = (*std::max_element(std::begin(mScaleMapLog), std::end(mScaleMapLog))).first;
+		 SetRequirementGraph();
+		 SetGoalGraph();
+		 SetPoissonGraph();
+	 }
+
+	 GET(RequirementGraph, mRequirementGraph, TGraph*);
+	 GET(GoalGraph, mGoalGraph, TGraph*);
+	 GET(PoissonGraph, mPoissonGraph, TGraph*);
+	 GET(RequirementScaledGraph, mRequirementScaledGraph, TGraph*);
+	 GET(GoalScaledGraph, mGoalScaledGraph, TGraph*);
+	 GET(PoissonScaledGraph, mPoissonScaledGraph, TGraph*);
+};
+
+class ChargeResolution {
+	 friend class Run;
+private:
+	 ChargeResolution(Run* parent, string trueBranch, string measuredBranch,
+	                  ChargeResolutionBenchmarks& benchmarks, int max_npe)
+			   : pRun(parent),
+			     mTrueBranch(trueBranch),
+			     mMeasuredBranch(measuredBranch),
+			     mMaxNPE(max_npe),
+	           mBenchmarks(benchmarks)
+	 {
+		 Init();
+		 FillCharges();
+		 SetChargeResolution();
+		 BinChargeResolution();
+	 }
+	 Run* pRun;
+	 int mMaxNPE;
+	 string mTrueBranch;
+	 string mMeasuredBranch;
+	 map<int,double> mSumMap;
+	 map<int,int> mNMap;
+	 TGraphErrors* mChargeResolutionGraph;
+	 TGraphErrors* mChargeResolutionScaledGraph;
+	 TH2F* mVariationHist;
+
+
+	 ChargeResolutionBenchmarks& mBenchmarks;
+
+	 void Init();
+	 void FillCharges();
+	 void SetChargeResolution();
+	 void BinChargeResolution();
+
+public:
+	 GET(ChargeResolutionGraph, mChargeResolutionGraph, TGraphErrors*);
+	 GET(ChargeResolutionScaledGraph, mChargeResolutionScaledGraph, TGraphErrors*);
+	 GET(VariationHist,mVariationHist,TH2F*);
+
+	 map<string,double> GetScores(double low1, double low2, double high1, double high2);
+};
+
+#endif //OXTOOLS_CHARGERESOLUTION_H

@@ -1,0 +1,107 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+#include "Filepath.h"
+#include <oxtools_ttree_converter.h>
+
+Filepath_ptr FilepathLoader::Load(fs::path input_filepath) {
+	Filepath temp_fp(input_filepath);
+	if (temp_fp.mRoot) {
+		if (temp_fp.mOx) {
+			COUTP("[file][OxRoot] " << input_filepath);
+			return OxrootFile_ptr(new OxRootFilepath(input_filepath));
+		}
+		else {
+			COUTP("[file][Root] " << input_filepath);
+			return RootFile_ptr(new RootFilepath(input_filepath));
+		}
+	}
+	else if (temp_fp.mTxt) {
+		COUTP("[file][Txt] " << input_filepath);
+		return TxtFile_ptr(new TxtFilepath(input_filepath));
+	}
+	else {
+		COUTP("[file] " << input_filepath);
+		return Filepath_ptr(new Filepath(input_filepath));
+	}
+}
+
+Filepath_ptr FilepathLoader::ConvertAndLoad(fs::path input_filepath, bool delete_input) {
+	auto temp_fp = Load(input_filepath);
+	if (temp_fp->mOx)
+		return temp_fp;
+	else {
+		oxtools_ttree_converter(temp_fp);
+		if (delete_input) {
+			fs::remove(temp_fp->GetInput());
+			COUTP("[file][input][deleted]");
+		}
+		return Load(temp_fp->mOutputOxrootFilepath);
+	}
+}
+
+void Filepath::Init() {
+	mInput = "";
+	mInputName = "";
+	mInputDirectory = "";
+	mInputStem = "";
+	mInputExtension = "";
+	mRoot = false;
+	mOx = false;
+	mTxt = false;
+	mRunIdentifier = "";
+	mOutputOxrootFilepath = "";
+	mFileSize = 0;
+	mRun = nullptr;
+}
+
+void Filepath::SetInput(fs::path input) {
+	if (!fs::exists(input))
+		THROW("Input file does not exist");
+	mInput = input;
+	mInputName = input.filename();
+	mInputDirectory = input.parent_path();
+	mInputStem = input.stem();
+
+
+	// Determine extension
+	mInputExtension = input.extension();
+	if (strcmp(mInputExtension.c_str(),".root") == 0) {
+		mRoot = true;
+		if (strcmp(mInputStem.extension().c_str(),".ox") == 0) {
+			mOx = true;
+			mInputStem = mInputStem.stem();
+			mInputExtension = fs::path(".ox" + mInputExtension.string());
+		}
+	}
+	else if (strcmp(mInputExtension.c_str(),".txt") == 0) {
+		mTxt = true;
+	}
+	else THROW("Unknown file extension");
+
+	SetRunIdentifier();
+	mOutputOxrootFilepath = mInputDirectory / mRunIdentifier += ".ox.root";
+}
+
+void Filepath::SetRunIdentifier() {
+	mRunIdentifier = regex_extract(mInputStem.string(), "cameradata_run([0-9]+.*)", false);
+	if (mInput.string().find("cameradata_run") != string::npos)
+		mRunIdentifier = "r" + mRunIdentifier;
+}
+
+void OxRootFilepath::CreateOutputDirectory() const{
+	if (boost::filesystem::create_directories(mOutputDirectory))
+		COUTP("[directory][new] "<< mOutputDirectory);
+}
+
+void Filepath::Print() {
+	COUTP("[filetype]        " << mType);
+	COUTP("[filename]        " << mInputName.string());
+	COUTP("[directory]       " << mInputDirectory.string());
+}
+
+void RootFilepath::Print() {
+	Filepath::Print();
+	print_TFile_contents(mTFile);
+}

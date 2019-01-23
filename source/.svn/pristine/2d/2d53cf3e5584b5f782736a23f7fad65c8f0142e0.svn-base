@@ -1,0 +1,195 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Run.h>
+#include "Filepath.h"
+
+uint32_t Run::sIdGenerator = 0;
+
+//Run::Run(const fs::path &input_root_filepath, const vector<string> &branch_name_vector) {
+void Run::BuildRun(const set<string> branch_name_set) {
+	START()
+
+	mBranchNameSet = branch_name_set;
+
+	TTree* eventTTree = pOxRootFile->GetEventTTree();
+	TTree* pixelTTree = pOxRootFile->GetPixelTTree();
+
+	// Set Nums
+	mNumEventTTreeEntries = (uint32_t) eventTTree->GetEntries();
+	mNumPixelTTreeEntries = (uint32_t) pixelTTree->GetEntries();
+	mMaxEventNum = (uint32_t) eventTTree->GetMaximum("fEventIndex");
+	mMaxPixelNum = (uint32_t) pixelTTree->GetMaximum("fPixelId");
+
+	// Checks
+	if (mNumEventTTreeEntries == 0)
+		THROW("Event TTree is empty!");
+	if (mNumPixelTTreeEntries == 0)
+		THROW("Pixel TTree is empty!");
+
+	COUTP("[run] " << mRunId);
+	COUTP("[run] " << pOxRootFile->GetRunIdentifier());
+	COUTP("[run][event][entries][num] " << mNumEventTTreeEntries);
+	COUTP("[run][pixel][entries][num] " << mNumPixelTTreeEntries);
+	COUTP("[run][event][id][max] " << mMaxEventNum);
+	COUTP("[run][pixel][id][max] " << mMaxPixelNum);
+
+	// Create Entry and assign addresses for TTree branches
+	Entry entry_holder;
+	entry_holder.SetDefaultOxtoolsInputBranches(eventTTree);
+
+	// Set extra branches of interest
+	entry_holder.IncludeOxtoolInputBranch(eventTTree, mBranchNameSet);
+	for (const auto branch_name : mBranchNameSet) {
+		if (!check_TTree_branch_exists(eventTTree, branch_name.c_str()))
+			THROW(Form("Event TTree does not contain branch: %s",branch_name.c_str()));
+		mBranchValueMaxMap[branch_name] = ((float) (eventTTree->GetMaximum(branch_name.c_str())));
+		mBranchValueMinMap[branch_name] = ((float) (eventTTree->GetMinimum(branch_name.c_str())));
+		COUTP("[run][branch][" << branch_name << "][max] " << mBranchValueMaxMap[branch_name]);
+		COUTP("[run][branch][" << branch_name << "][min] " << mBranchValueMinMap[branch_name]);
+	}
+
+	// Fill event information
+	Progress progress(mNumEventTTreeEntries, "Filling event information from TTree : ");
+	for (uint32_t i = 0; i < mNumEventTTreeEntries; i++) {
+		progress.Print(i);
+		eventTTree->GetEntry(i);
+		entry_holder.mTTreeIndex = i;
+		// avoid duplicate entries (produced by inactive modules)
+//		if (!mBoolEntryMap[entry_holder.mCameraId][entry_holder.mEventId][entry_holder.mPixelId]) {
+		AddCameraEntry(entry_holder);
+		mBoolEntryMap[entry_holder.mCameraId][entry_holder.mEventId][entry_holder.mPixelId] = true;
+		mSourceEventMap.insert(map<uint32_t, uint32_t>::value_type (entry_holder.mSourceEventId,entry_holder.mEventId));
+//		}
+	}
+
+	// Create Pixel and assign addresses for TTree branches
+	Pixel pixel_holder;
+	pixel_holder.SetInputTTreeBranches(pixelTTree);
+
+	for (uint32_t i = 0; i < mNumPixelTTreeEntries; i++) {
+		pixelTTree->GetEntry(i);
+		pixel_holder.mTTreeIndex = i;
+		auto itp = mCameraMap.find(pixel_holder.mCameraId);
+		(itp->second).AddPixelEntry(pixel_holder);
+	}
+
+	// Loop over cameras to fill stats
+	mNumCameras = (uint32_t) mCameraMap.size();
+	COUTP("[run][camera][num] " << mNumCameras);
+	for (auto &camera_pair : mCameraMap) {
+		auto &camera = camera_pair.second;
+		camera.mNumEvents = (int) camera.mEventMap.size();
+		camera.mNumPixels = (int) camera.mPixelMap.size();
+		assert(camera.mNumEvents > 0 && camera.mNumPixels > 0);
+		set<int> row_set, column_set, module_set, module_pixel_set;
+		for (auto &pixel_pair : camera.mPixelMap) {
+			auto& pixel = pixel_pair.second;
+			row_set.insert(pixel.mRow);
+			column_set.insert(pixel.mColumn);
+			module_set.insert(pixel.mModuleId);
+			module_pixel_set.insert(pixel.mModulePixelSlot);
+		}
+		camera.mNumRows = (int) row_set.size();
+		camera.mNumColumns = (int) column_set.size();
+		camera.mNumModules = (int) module_set.size();
+		camera.mNumModulePixels = (int) module_pixel_set.size();
+
+		// Loop over events in each camera to set min max for events across cameras
+		for (auto &event_pair : camera.GetEventMap()) {
+			auto &event = event_pair.second;
+			int current_event = event.GetEventIndex();
+			for (const auto &branch_pair : event.mBranchValueMinMap) {
+				const auto branch_name = branch_pair.first;
+				const auto branch_min = branch_pair.second;
+				if (!mEventBranchValueMinMap[current_event].count(branch_name) ||
+						  mEventBranchValueMinMap[current_event][branch_name] > branch_min)
+					mEventBranchValueMinMap[current_event][branch_name] = branch_min;
+			}
+			for (const auto &branch_pair : event.mBranchValueMaxMap) {
+				const auto branch_name = branch_pair.first;
+				const auto branch_max = branch_pair.second;
+				if (!mEventBranchValueMaxMap[current_event].count(branch_name) ||
+						  mEventBranchValueMaxMap[current_event][branch_name] < branch_max)
+					mEventBranchValueMaxMap[current_event][branch_name] = branch_max;
+			}
+		}
+
+	}
+	END()
+}
+
+void Run::AddCameraEntry(const Entry &entry_holder) {
+	auto itp = mCameraMap.insert(std::map<int, Camera>::value_type (entry_holder.mCameraId,Camera(this)));
+	(itp.first->second).AddEventEntry(entry_holder);
+}
+
+void Run::Init() {
+	mRunId = sIdGenerator++;
+	mCameraMap.clear();
+	mBoolEntryMap.clear();
+	mNumCameras = 0;
+	mNumEventTTreeEntries = 0;
+	mNumPixelTTreeEntries = 0;
+	mMaxEventNum = 0;
+	mMaxPixelNum = 0;
+	mBranchValueMaxMap.clear();
+	mBranchValueMinMap.clear();
+	mEventBranchValueMaxMap.clear();
+	mEventBranchValueMinMap.clear();
+	mSourceEventMap.clear();
+	mChargeResolution = NULL;
+}
+
+bool Run::CheckEntryExists(int camera_id, uint32_t event_id, uint32_t pixel_id) {
+	return mBoolEntryMap[camera_id][event_id][pixel_id];
+}
+
+bool Run::CheckEventExists(int camera_id, uint32_t event_id) {
+	for (auto entry_pair : mBoolEntryMap[camera_id][event_id]) {
+		auto entry = entry_pair.second;
+		if (entry) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool Run::CheckCameraExists(int camera_id) {
+	for (auto event_pair : mBoolEntryMap[camera_id]) {
+		auto event_map = event_pair.second;
+		for (auto entry_pair : event_map) {
+			auto entry = entry_pair.second;
+			if (entry) {
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+int Run::GetNumCamerasWithEvent(uint32_t event_id) {
+	int num_cameras = 0;
+	for (const auto &camera_pair : mCameraMap) {
+		const auto &camera = camera_pair.second;
+		int current_camera = camera.GetCameraId();
+		if (CheckEventExists(current_camera, event_id))
+			++num_cameras;
+	}
+	return num_cameras;
+}
+
+void Run::ResetBoolEntryMap() {
+	mBoolEntryMap.clear();
+	for (auto camera_pair : mCameraMap) {
+		auto camera = camera_pair.second;
+		for (auto event_pair : camera.GetEventMap()) {
+			auto event = event_pair.second;
+			for (auto entry_pair : event.GetEntryMap()) {
+				auto entry = entry_pair.second;
+				mBoolEntryMap[camera.GetCameraId()][event.GetEventIndex()][entry.GetPixelId()] = true;
+			}
+		}
+	}
+}

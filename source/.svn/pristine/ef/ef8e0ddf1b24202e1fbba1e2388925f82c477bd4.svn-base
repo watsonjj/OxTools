@@ -1,0 +1,57 @@
+#include "Filepath.h"
+
+int main(int argc, char *argv[]) {
+	START()
+	string help_message = Form(
+"%s [-f {input_filepaths}] [OPTIONS]                                            \n"
+"  -- convert file containing camera events into a OxRoot file                  \n\n"
+"Options:        Arguments:        Description:                                 \n"
+" -h | --help                       show the help text                          \n"
+" -f              [input_filepaths]  path to the input files (accepts wildcards)\n"
+" -d                                delete the input file afterwards            \n",
+argv[0]);
+
+	// Define variables
+	set<fs::path> input_filepath_set;
+	bool delete_input = false;
+
+	// Create flags for required inputs
+	bool input_filepath_f = false;
+
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			cout << help_message << endl;
+			exit(0);
+		}
+		if (strcmp(argv[i], "-f") == 0) {
+			while(i+1 < argc && string(argv[i + 1]).find("-") != 0) {
+				input_filepath_set.insert(argv[i + 1]);
+				input_filepath_f = true;
+				i++;
+			}
+		}
+		else if (strcmp(argv[i], "-d") == 0) {
+			delete_input = true;
+		}
+	}
+	if (!input_filepath_f) {
+		COUTP("[arg][error] Required argument not specified: [input_filepath]");
+		cout << help_message << endl;
+		return 1;
+	}
+
+	for (fs::path path : input_filepath_set) {
+		auto filepath = FilepathLoader::Load(path);
+//		if (filepath->mOx)
+//			continue;
+//		else {
+//			oxtools_ttree_converter(filepath);
+//			if (delete_input) {
+//				fs::remove(filepath->GetInput());
+//				COUTP("[file][input][deleted]");
+//			}
+//		}
+	}
+	END();
+	return 0;
+}

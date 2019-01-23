@@ -1,0 +1,57 @@
+#%Module
+
+set svnUsername jwatson
+
+set pkgLanguage C++
+set pkgProject CTA
+set pkgName OxTools
+set pkgSvn "svn+ssh://$svnUsername@svn.in2p3.fr/cta/User/jwatson/OxTools/trunk"
+set pkgBase $::env(HOME)/Software/$pkgName
+#set pkgBase $::env(dir_programs)/$pkgLanguage/$pkgProject/$pkgName
+set pkgSource $pkgBase/source
+set pkgBuild $pkgBase/build
+set pkgInstall $pkgBase/install
+
+#%Module
+
+proc ModulesHelp { } {
+  global pkgLanguage
+  global pkgName
+  global pkgHome
+  puts stderr "\tSets up the environment for $pkgLanguage/$pkgProject/$pkgName\n" 
+}
+
+module-whatis "sets up the environment for $pkgLanguage/$pkgProject/$pkgName" 
+
+conflict $pkgName
+
+module load root
+prereq root
+
+set-alias ${pkgName}_gos "cd $pkgSource" 
+set-alias ${pkgName}_gob "cd $pkgBuild" 
+set-alias ${pkgName}_goi "cd $pkgInstall" 
+
+set pkgCLEAN "rm -rf $pkgBuild && mkdir -p $pkgBuild && rm -rf $pkgInstall && mkdir -p $pkgInstall" 
+set pkgCMAKE "cmake -DCMAKE_INSTALL_PREFIX=$pkgInstall $pkgSource" 
+set pkgMAKE "make -j8" 
+set pkgTEST "ctest -V" 
+set pkgINSTALL "make install" 
+
+set-alias ${pkgName}_clean "cd $pkgBuild && $pkgCLEAN && cd $pkgBuild" 
+set-alias ${pkgName}_cmake "cd $pkgBuild && $pkgCMAKE" 
+set-alias ${pkgName}_make "cd $pkgBuild && $pkgMAKE" 
+set-alias ${pkgName}_install "cd $pkgBuild && $pkgINSTALL && cd $pkgInstall" 
+
+set-alias ${pkgName}_build "${pkgName}_make && ${pkgName}_install" 
+set-alias ${pkgName}_fresh "${pkgName}_clean && ${pkgName}_cmake && ${pkgName}_make && ${pkgName}_install"
+
+set-alias ${pkgName}_update "cd $pkgSource && svn update"
+set-alias ${pkgName}_checkout "mkdir -p $pkgSource && cd $pkgBase && svn checkout ${pkgSvn} $pkgSource"
+set-alias ${pkgName}_log "cd $pkgSource && svn log -l 10"
+set-alias ${pkgName}_info "cd $pkgSource && svn info"
+set-alias ${pkgName}_status "cd $pkgSource && svn status"
+set-alias ${pkgName}_diff "cd $pkgSource && svn diff"
+set-alias ${pkgName}_commit "cd $pkgSource && svn commit"
+set-alias ${pkgName}_revert "cd $pkgSource && svn revert -R $pkgSource"
+set-alias ${pkgName}_add "cd $pkgSource && svn add"

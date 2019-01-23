@@ -1,0 +1,45 @@
+//
+// Created by Jason Watson on 07/03/2016.
+//
+
+#include "Filepath.h"
+
+Run_ptr OxRootFilepath::Read() {
+	if (!mRun) {
+		START()
+
+		vector<string> branch_names = {"fPulseHeight", "fPulseArea", "fPulsePosition", "fTrueNPE"};
+
+		mRun = std::make_shared<Run>(shared_from_this(), branch_names);
+
+		Long64_t event_entries = mEventTTree->GetEntries();
+		Long64_t pixel_entries = mPixelTTree->GetEntries();
+
+		// Checks
+		if (event_entries == 0) THROW("Event TTree is empty!");
+		if (pixel_entries == 0) THROW("Pixel TTree is empty!");
+
+		Pixel pixel_holder;
+		pixel_holder.SetOxToolsBranchAddress(mPixelTTree);
+		Progress progressP(pixel_entries, "Filling pixel information from TTree : ");
+		for (uint32_t i = 0; i < pixel_entries; i++) {
+			progressP.Print(i);
+			mPixelTTree->GetEntry(i);
+			mRun->AddPixel(i, pixel_holder);
+		}
+
+		Entry entry_holder;
+		entry_holder.SetOxtoolsBranchAddress(mEventTTree, branch_names);
+		Progress progressE(event_entries, "Filling event information from TTree : ");
+		for (uint32_t i = 0; i < event_entries; i++) {
+			progressE.Print(i);
+			mEventTTree->GetEntry(i);
+			mRun->AddEntry(i, entry_holder);
+		}
+
+		mRun->SetStats();
+
+		END()
+	}
+	return mRun;
+}

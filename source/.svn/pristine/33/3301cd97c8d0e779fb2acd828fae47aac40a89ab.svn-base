@@ -1,0 +1,123 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+#include "Filepaths.h"
+
+
+Filepaths::Filepaths(fs::path input_filepath) {
+	Init(input_filepath);
+}
+
+	void Filepaths::Init(fs::path input) {
+		m_output = "";
+		m_output_name = "";
+		m_output_directory = "";
+
+		m_run_number = "";
+		m_run_identifier = "";
+		m_event = "";
+		m_timeslice = "";
+		m_type = "";
+		m_branch = "";
+		m_extension = "";
+		m_isox = false;
+		SetInput(input);
+	}
+
+	void Filepaths::SetInput(fs::path input) { //private
+		if (!fs::exists(input))
+			throw std::invalid_argument("[file][error] Input file does not exist");
+		m_input = input;
+		m_input_name = input.filename();
+		m_input_directory = input.parent_path();
+		m_input_stem = input.stem();
+		m_input_extension = input.extension();
+		if (strcmp(m_input_stem.extension().c_str(),".ox") == 0) {
+			m_isox = true;
+			m_input_stem = m_input_stem.stem();
+			m_input_extension = fs::path(".ox" + m_input_extension.string());
+		}
+	}
+
+	void Filepaths::SetOutput(fs::path output) { //private
+		m_output = output;
+		m_output_name = output.filename();
+		m_output_directory = output.parent_path();
+	}
+
+	void Filepaths::BuildOutput(string extension, string event, string timeslice, string type, string branch) {
+		SetRun();
+		SetEvent(event);
+		SetTimeslice(timeslice);
+		SetExtension(extension, type, branch);
+		fs::path output = m_input_directory;
+		if (extension.find("root") == string::npos) { // Don't put root files in separate folder to txt
+			AppendFilenameDirectory(output);
+		}
+		AppendEventDirectory(output); // If timeslices, append event dir
+		AppendOutputName(output);
+		SetOutput(output);
+	}
+
+	void Filepaths::AppendOutputName(fs::path &output) { //private
+		string output_name;
+		output_name = m_run_identifier;
+		if (!m_event.empty()) output_name += ("_e" + m_event);
+		if (!m_timeslice.empty()) output_name += ("_t" + m_timeslice);
+		if (!m_type.empty()) output_name += ("_" + m_type);
+		if (!m_branch.empty()) output_name += ("_" + m_branch);
+		string check_output_name = output_name + m_extension;
+		output_name += m_extension;
+		output /= output_name;
+	}
+
+	void Filepaths::BuildCustomOutput(string subdirectory, string name, string extension, fs::path directory) {
+		fs::path output = m_input_directory;
+		if (!directory.empty()) output = directory;
+		output /= subdirectory;
+		output /= name;
+		output += extension;
+		SetOutput(output);
+	}
+
+	void Filepaths::AppendFilenameDirectory(fs::path &output) { //private
+		output /= m_input_stem;
+	}
+
+	void Filepaths::AppendEventDirectory(fs::path &output) { //private
+		// If timeslices, append event dir
+		if (output.string().find("/e" + m_event) == string::npos) {
+			if (!m_timeslice.empty())
+				if (!m_event.empty())
+					output /= ("e" + m_event);
+		}
+	}
+
+	void Filepaths::SetRun() { //private
+		m_run_number = regex_extract(m_input_stem.string(), "cameradata_run([0-9]+.*)", false);
+		m_run_identifier = m_run_number;
+		if (m_input.string().find("cameradata_run") != string::npos)
+			m_run_identifier = "r" + m_run_number;
+	}
+
+	void Filepaths::SetEvent(string event) { //private
+		m_event = event;
+	}
+
+	void Filepaths::SetTimeslice(string timeslice) { //private
+		m_timeslice = timeslice;
+	}
+
+	void Filepaths::SetExtension(string extension, string type, string branch) { //private
+		if (extension.find(".") == string::npos)
+			extension = "." + extension;
+		m_extension = extension;
+		m_type = type;
+		m_branch = branch;
+	}
+
+	void Filepaths::CreateOutputDirectory() {
+		if (boost::filesystem::create_directories(m_output_directory))
+			cout << Print::Level() << "[file] Directory Created: "<< m_output_directory << endl;
+	}

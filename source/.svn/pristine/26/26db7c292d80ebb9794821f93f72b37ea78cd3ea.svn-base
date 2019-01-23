@@ -1,0 +1,40 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#ifndef OXTOOLS_EVENT_H
+#define OXTOOLS_EVENT_H
+
+#include <initialise.h>
+#include <Entry.h>
+#include <Pixel.h>
+
+typedef std::map<int, Entry> map_int_Entry_t;
+
+
+class Event {
+private:
+	 uint32_t mEventIndex;
+	 map<string,float> mBranchValueMaxMap;
+	 map<string,float> mBranchValueMinMap;
+	 map<int,Entry> mEntryMap;
+
+	 void Init();
+	 void AddEntry(const Entry &entry_holder);
+
+
+	 //	 HillasParameter_ptr fHillasParameter;
+
+public:
+	 friend class Camera;
+	 friend class Run;
+	 Event() { Init();};
+
+	 GET(EventIndex, EventIndex, uint32_t);
+	 GETMAPCONTENT(BranchMax,BranchValueMax,float,string);
+	 GETMAPCONTENT(BranchMin,BranchValueMin,float,string);
+	 GETCREF(EntryMap, EntryMap, map_int_Entry_t);
+};
+
+
+#endif //OXTOOLS_EVENT_H

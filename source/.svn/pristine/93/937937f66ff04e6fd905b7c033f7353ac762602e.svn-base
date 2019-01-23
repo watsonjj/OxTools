@@ -1,0 +1,101 @@
+//
+// Created by Jason Watson on 18/09/15.
+//
+
+#include "Pixel.h"
+
+int Pixel::s_num_entries = 0;
+int Pixel::s_max_pixel = 0;
+int Pixel::s_max_row = 0;
+int Pixel::s_max_column = 0;
+
+void Pixel::Reset() {
+	m_pixel          = 0;
+	m_module         = 0;
+	m_module_pixel   = 0;
+	m_module_pixel_slot = 0;
+	m_xpix           = 0;
+	m_ypix           = 0;
+	m_zpix           = 0;
+	m_row            = 0;
+	m_column         = 0;
+}
+
+void Pixel::ResetStatic() {
+	s_max_pixel    = 0;
+	s_num_entries  = 0;
+	s_max_row      = 0;
+	s_max_column   = 0;
+}
+
+void Pixel::ParseTxtFileLine(string txt_file_line) {
+	std::istringstream iss(txt_file_line);
+	string context;
+	iss >> context;
+	iss >> m_pixel;
+	iss >> m_module;
+	iss >> m_module_pixel;
+	iss >> m_xpix;
+	iss >> m_ypix;
+	iss >> m_zpix;
+	iss >> m_row;
+	iss >> m_column;
+}
+
+
+void Pixel::SetOutputTTreeBranches(TTree *&output_TTree) {
+	output_TTree->Branch("fPixelId", &m_pixel, "fPixelId/I");
+	output_TTree->Branch("fModuleId", &m_module, "fModuleId/I");
+	output_TTree->Branch("fModulePixelSlot", &m_module_pixel_slot, "fModulePixelSlot/I");
+	output_TTree->Branch("fPixelX", &m_xpix, "fPixelX/F");
+	output_TTree->Branch("fPixelY", &m_ypix, "fPixelY/F");
+	output_TTree->Branch("fPixelZ", &m_zpix, "fPixelZ/F");
+	output_TTree->Branch("fPixelRow", &m_row, "fPixelRow/I");
+	output_TTree->Branch("fPixelColumn", &m_column, "fPixelColumn/I");
+};
+
+void Pixel::SetInputTTreeBraches(TTree *&input_tree) {
+	SetTTreeNum(input_tree);
+	input_tree->SetBranchAddress("fPixelId", &m_pixel);
+	input_tree->SetBranchAddress("fModuleId", &m_module);
+	input_tree->SetBranchAddress("fModulePixelSlot", &m_module_pixel_slot);
+	input_tree->SetBranchAddress("fPixelX", &m_xpix);
+	input_tree->SetBranchAddress("fPixelY", &m_ypix);
+	input_tree->SetBranchAddress("fPixelZ", &m_zpix);
+	if (check_TTree_branch_exists(input_tree, "fPixelRow")
+	    && check_TTree_branch_exists(input_tree, "fPixelColumn")) {
+		input_tree->SetBranchAddress("fPixelRow", &m_row);
+		input_tree->SetBranchAddress("fPixelColumn", &m_column);
+	}
+};
+
+void Pixel::SetTTreeNum(TTree *input_TTree) {
+	s_max_pixel = (int) (input_TTree->GetMaximum("fPixelId"));
+	s_num_entries = (int) input_TTree->GetEntries();
+	if (s_num_entries == 0) throw std::invalid_argument("[ttree][error] Pixel TTree is empty!");
+	cout << Print::Level() << "[ttree][pixel] Max pixel set to: " << s_max_pixel << endl;
+	cout << Print::Level() << "[ttree][pixel] Number of pixel entries set to: " << s_num_entries << endl;
+	if (check_TTree_branch_exists(input_TTree, "fPixelRow")
+	    && check_TTree_branch_exists(input_TTree, "fPixelColumn")) {
+		s_max_row = (int) (input_TTree->GetMaximum("fPixelRow"));
+		s_max_column = (int) (input_TTree->GetMaximum("fPixelColumn"));
+		cout << Print::Level() << "[ttree][pixel] Max pixel row set to: " << s_max_row << endl;
+		cout << Print::Level() << "[ttree][pixel] Max pixel column set to: " << s_max_column << endl;
+	}
+
+}
+
+vector<Pixel> GetOxtoolPixelVector(TTree* input_ttree) {
+	Print::FunctionStart();
+	cout << Print::Level() << "[ttree][pixel] Building pixel vector from TTree" << endl;
+	vector<Pixel> pixel_vector;
+	Pixel pixel_holder;
+	pixel_holder.SetInputTTreeBraches(input_ttree);
+	for (int i=0; i<Pixel::s_num_entries; i++) {
+		input_ttree->GetEntry(i);
+		pixel_vector.push_back(pixel_holder);
+	}
+	Print::FunctionEnd();
+	return pixel_vector;
+}
+

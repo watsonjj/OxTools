@@ -1,0 +1,69 @@
+//
+// Created by Jason Watson on 14/09/15.
+//
+
+#ifndef OXTOOLS_UTILITIES_H
+#define OXTOOLS_UTILITIES_H
+
+#include <initialise.h>
+
+string regex_extract(string input, string regex, bool return_empty = true);
+bool check_TTree_branch_exists(TTree *tree, string branch_name);
+long get_file_size(fs::path filepath);
+
+class Progress {
+private:
+	 int m_milestone = 0;
+	 float m_milestone_base = 10;
+	 float m_progress = 0.0;
+	 float m_percentage = 0.0;
+	 float m_total = 0.0;
+	 Progress() {}
+	 void IncrementMilestone() { m_milestone++; }
+	 void SetPosition(float new_position) { m_progress = new_position; }
+	 void AppendPosition(float new_position) { m_progress += new_position; }
+	 void UpdatePercentage() {
+		 m_percentage = m_progress / m_total * 100;
+	 }
+	 void PrintPercentage() {
+		 printf("\r %d%% complete...\r", int(m_percentage));
+		 fflush(stdout);
+	 }
+	 void ConditionalPrintPercentage() {
+		 if (m_percentage > m_milestone*m_milestone_base) {
+			 PrintPercentage();
+			 IncrementMilestone();
+		 }
+	 }
+public:
+	 Progress(float total, float milestone_base = 10) {
+		 m_total = total;
+		 m_milestone_base = milestone_base;
+	 }
+	 void Print(float new_position) {
+		 SetPosition(new_position);
+		 UpdatePercentage();
+		 ConditionalPrintPercentage();
+	 }
+	 void AppendPrint(float new_position) {
+		 AppendPosition(new_position);
+		 UpdatePercentage();
+		 ConditionalPrintPercentage();
+	 }
+};
+
+class Print {
+private:
+	 static char dash;
+	 static uint32_t global_print_level;
+public:
+	 static string Level () {return string(global_print_level, dash);}
+	 static void LevelIncrease() {global_print_level++;}
+	 static void LevelDecrease() {global_print_level--;}
+	 static void FunctionStart(string function = __FUNCTION__) {
+		 cout << Level() << "[START] " << function << endl; LevelIncrease();}
+	 static void FunctionEnd(string function = __FUNCTION__) {
+		 LevelDecrease(); cout << Level() << "[END] " << function << endl;}
+};
+
+#endif //OXTOOLS_UTILITIES_H

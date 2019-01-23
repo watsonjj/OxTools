@@ -1,0 +1,62 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Camera.h>
+
+
+void Camera::Reset() {
+	m_camera_id = 0;
+	m_num_pixel_entries = 0;
+	m_num_pixels = 0;
+	m_num_rows = 0;
+	m_num_columns = 0;
+	m_event_map.clear();
+	m_pixel_map.clear();
+}
+
+void Camera::SetPixelTTreeNum(TTree *pixel_ttree) {
+	m_num_pixel_entries = (int) pixel_ttree->GetEntries();
+	if (m_num_pixel_entries == 0) throw std::invalid_argument("[ttree][error] Pixel TTree is empty!");
+	cout << Print::Level() << "[camera] Number of pixel entries set to: " <<
+	                          m_num_pixel_entries << endl;
+	if (check_TTree_branch_exists(pixel_ttree, "fPixelRow")
+	    && check_TTree_branch_exists(pixel_ttree, "fPixelColumn")) {
+		m_num_rows = (int) (pixel_ttree->GetMaximum("fPixelRow") + 1);
+		m_num_columns = (int) (pixel_ttree->GetMaximum("fPixelColumn") + 1);
+		cout << Print::Level() << "[camera] Max pixel row set to: " <<
+		                          m_num_rows << endl;
+		cout << Print::Level() << "[camera] Max pixel column set to: " <<
+		                          m_num_columns << endl;
+	}
+}
+
+int Camera::GetRow(int pixel_id) {
+	if (!m_pixel_map.count(pixel_id)) {
+		throw std::invalid_argument("[pixel][error] Pixel does not exist");
+	}
+	return m_pixel_map[pixel_id].m_row;
+}
+
+int Camera::GetColumn(int pixel_id) {
+	if (!m_pixel_map.count(pixel_id)) {
+		throw std::invalid_argument("[pixel][error] Pixel does not exist");
+	}
+	return m_pixel_map[pixel_id].m_column;
+}
+
+void Camera::AddEventEntry(Entry entry_holder) {
+	m_event_map[entry_holder.GetEvent()].AddEntry(entry_holder);
+	m_event_map[entry_holder.GetEvent()].event_index = entry_holder.GetEvent();
+}
+
+void Camera::AddPixelEntry(Pixel pixel_holder) {
+	m_pixel_map[pixel_holder.m_pixel] = pixel_holder;
+}
+
+Event* Camera::GetEvent(uint32_t event_id)  {
+	if (!m_event_map.count(event_id)) {
+		throw std::invalid_argument("[event][error] Event does not exist");
+	}
+	return &m_event_map[event_id];
+}

@@ -1,0 +1,19 @@
+//
+// Created by Jason Watson on 14/09/15.
+//
+
+#include <initialise.h>
+#include <Filepaths.h>
+
+
+int main(int argc, char *argv[]) {
+
+
+	fs::path input_filepath = argv[1];
+	cout << input_filepath << endl;
+	Filepaths filepaths(input_filepath);
+	cout << filepaths.GetInput() << endl;
+	filepaths.BuildOutput(".pdf", "34", "", "camera");
+	cout << filepaths.GetOutput() << endl;
+	return 0;
+}

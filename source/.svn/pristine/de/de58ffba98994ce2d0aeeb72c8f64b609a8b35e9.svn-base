@@ -1,0 +1,82 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Event.h>
+#include <Run.h>
+
+
+void Event::Init() {
+	mEventIndex = 0;
+	mBranchValueMinMap.clear();
+	mBranchValueMaxMap.clear();
+	mEntryMap.clear();
+	mCameraImage = NULL;
+	mHillasParameter = NULL;
+}
+
+void Event::AddEntry(const Entry &entry_holder) {
+	mEntryMap.insert(std::map<int, Entry>::value_type (entry_holder.mPixelId,entry_holder));
+	mEventIndex = entry_holder.GetEventId();
+	mSourceEventId = entry_holder.GetSourceEventId();
+	for (const auto &branch_pair : entry_holder.mBranchValueMap) {
+		const auto branch_name = branch_pair.first;
+		const auto branch_value = branch_pair.second;
+		if (!mBranchValueMinMap.count(branch_name) || mBranchValueMinMap[branch_name] > branch_value) {
+			mBranchValueMinMap[branch_name] = branch_value;
+		}
+		if (!mBranchValueMaxMap.count(branch_name) || mBranchValueMaxMap[branch_name] < branch_value)
+			mBranchValueMaxMap[branch_name] = branch_value;
+	}
+}
+
+void Event::Tailcut(string branch_name) {
+	std::pair<float,float> tailcut = std::make_pair(50,100);
+	vector<int> remove_entries;
+	for (auto &entry_pair : mEntryMap) {
+		auto &entry = entry_pair.second;
+		int pixel_id = entry.GetPixelId();
+		float pixel_value = entry.GetBranchValue(branch_name);
+		set<int> neighbours = pCamera->GetNeighbouringPixels(pixel_id);
+		float neighbour_sum = 0;
+		for (int n : neighbours) {
+			if (mEntryMap.count(n)) {
+				neighbour_sum += mEntryMap[n].GetBranchValue(branch_name);
+			}
+		}
+		if (pixel_value < tailcut.first) {
+			if (neighbour_sum < tailcut.second) {
+				remove_entries.push_back(pixel_id);
+			}
+		}
+	}
+	for (int entry_num : remove_entries) {
+		mEntryMap.erase(entry_num);
+	}
+	pCamera->GetRun()->ResetBoolEntryMap();
+	COUTP("[event][tailcuts] " << remove_entries.size());
+}
+
+TH2F* Event::GetCameraImage(string branch_name){
+	if (!mCameraImage) {
+		mCameraImage = (TH2F *) pCamera->GetBaseCameraTH2F()->Clone("rCameraImage");
+		mCameraImage->GetZaxis()->SetTitle(branch_name.c_str());
+		for (auto &entry_pair : mEntryMap) {
+			auto &entry = entry_pair.second;
+			int pixel_id = entry.GetPixelId();
+			double X = pCamera->GetPixel(pixel_id).GetXpix();
+			double Y = pCamera->GetPixel(pixel_id).GetYpix();
+			float bin_content = entry.GetBranchValue(branch_name);
+			int bin = mCameraImage->FindBin(X, Y);
+			mCameraImage->SetBinContent(bin , bin_content);
+		}
+	}
+	return mCameraImage;
+}
+
+HillasParameter* Event::GetHillasParameter(string branch_name) {
+	if (!mHillasParameter) {
+		mHillasParameter = new HillasParameter(this, branch_name);
+	}
+	return mHillasParameter;
+}

@@ -1,0 +1,101 @@
+//
+// Created by Jason Watson on 04/11/15.
+//
+
+#ifndef OXTOOLS_MACROS_H
+#define OXTOOLS_MACROS_H
+
+#define GET(Title, Name, Type) \
+	Type Get##Title() const { return m##Name; }
+
+#define GETREF(Title, Name, Type) \
+	Type& Get##Title() { return m##Name; }
+
+#define GETCREF(Title, Name, Type) \
+	const Type& Get##Title() const { return m##Name; }
+
+#define GETPTR(Title, Name, Type) \
+	Type& Get##Title() { return *m##Name; }
+
+#define GETCPTR(Title, Name, Type) \
+	const Type& Get##Title() const { return *m##Name; }
+
+#define SET(Title, Name, Type) \
+	void Set##Title(Type pType) { m##Name = pType; }
+#define SETREF(Title, Name, Type) \
+	void Set##Title(const Type& pType) { m##Name = pType; }
+
+#define GETSET(Title, Name, Type) \
+	GET(Name, Title, Type) \
+	SET(Name, Title, Type)
+
+#define GETSETREF(Title, Name, Type) \
+	GETREF(Name, Title, Type) \
+	GETCREF(Name, Title, Type) \
+	SETREF(Name, Title, Type)
+
+#define IS(Title, Name) \
+	bool Is##Title() const { return m##Name; }
+
+#define ISSET(Title, Name) \
+	IS(Name, Title) \
+	SET(Name, Title, bool)
+
+#define MAPACCESS(Key, Map) \
+	auto iterator = Map.find(Key); \
+	assert(iterator != Map.end()); \
+	return iterator->second;
+
+#define MAPACCESS_PTR(Key, Map) \
+	auto iterator = Map.find(Key); \
+	assert(iterator != Map.end()); \
+	return *(iterator->second);
+
+#define FRESHCOUT() \
+	std::cout << "\r" << std::string(200,' ') << "\r"
+
+#define COUTP(MESSAGE) \
+	FRESHCOUT() << Print::Level() << MESSAGE << std::endl
+
+#define START() \
+	FRESHCOUT() << Print::Level() << "[START] " << __FUNCTION__ << std::endl; \
+	Print::LevelIncrease();
+
+#define END() \
+	Print::LevelDecrease(); \
+	FRESHCOUT() << Print::Level() << "[END] " << __FUNCTION__ << std::endl;
+
+#define GETMAPCONTENT(Title, Name, Type, Keytype) \
+	Type Get##Title(Keytype key) const { \
+	if (!m##Name##Map.count(key)) { \
+		cout << "m" << #Name << "Map[" << key << "] <- Key does not exist\n\n\n" << endl; \
+		throw std::invalid_argument("^^^^^"); \
+	} \
+	return m##Name##Map.find(key)->second; }
+
+#define GETMAPCONTENTREF(Title, Name, Type, Keytype) \
+	const Type& Get##Title(Keytype key) const { \
+	if (!m##Name##Map.count(key)) { \
+		cout << "m" << #Name << "Map[" << key << "] <- Key does not exist\n\n\n" << endl; \
+		throw std::invalid_argument("^^^^^"); \
+	} \
+	return m##Name##Map.find(key)->second; }
+
+#define GET2DMAPCONTENT(Title, Name, Type, Keytype1, Keytype2) \
+	Type Get##Title(Keytype1 key1, Keytype2 key2) const { \
+	if (!m##Name##Map.count(key1)) { \
+		cout << "m" << #Name << "Map[" << key1 << "] <- Key does not exist\n\n\n" << endl; \
+		throw std::invalid_argument("^^^^^"); \
+	} \
+	else if (!(m##Name##Map.find(key1)->second).count(key2)) { \
+		cout << "m" << #Name << "Map[" << key1 << "][" << key2 \
+			<< "] <- Key does not exist\n\n\n" << endl; \
+		throw std::invalid_argument("^^^^^"); \
+	} \
+	return (m##Name##Map.find(key1)->second).find(key2)->second; }
+
+#define GETSTATIC(Title, Name, Type) \
+	static Type Get##Title() { return s##Name; }
+
+
+#endif //OXTOOLS_MACROS_H

@@ -1,0 +1,947 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="OxTools"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="clang"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\root-6.06.00\;CMake Files\..\..\root-6.06.00\cmake\;CMake Files\..\..\root-6.06.00\cmake\modules\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/strip">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/strip"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 install/local"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="save_oxroot">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/save_oxroot" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 save_oxroot"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="save_oxroot/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/save_oxroot" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 save_oxroot/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="run_simulation">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/run_simulation" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 run_simulation"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="run_simulation/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/run_simulation" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 run_simulation/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 install"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="print_file_info">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/print_file_info" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 print_file_info"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="print_file_info/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/print_file_info" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 print_file_info/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_timeseries">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_timeseries" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_timeseries"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_timeseries/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_timeseries" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_timeseries/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_fn">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/test_fn" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 test_fn"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_fn/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/test_fn" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 test_fn/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_hillas">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_hillas" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_hillas"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_hillas/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_hillas" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_hillas/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_temp_vs_ped">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_temp_vs_ped" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_temp_vs_ped"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_temp_vs_ped/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_temp_vs_ped" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_temp_vs_ped/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_camera_image">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_camera_image" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_camera_image"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_camera_image/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_camera_image" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_camera_image/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="fit_pulse_spectrum">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/fit_pulse_spectrum" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 fit_pulse_spectrum"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="fit_pulse_spectrum/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/fit_pulse_spectrum" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 fit_pulse_spectrum/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 list_install_components"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="join_runs">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/join_runs" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 join_runs"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="join_runs/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/join_runs" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 join_runs/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_pixel_positions">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_pixel_positions" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_pixel_positions"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_pixel_positions/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_pixel_positions" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_pixel_positions/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="create_charge_resolution">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/create_charge_resolution" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 create_charge_resolution"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="create_charge_resolution/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/create_charge_resolution" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 create_charge_resolution/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_vector_camera_image">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_vector_camera_image" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_vector_camera_image"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="plot_vector_camera_image/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin/plot_vector_camera_image" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 plot_vector_camera_image/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OxTools_LIB">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/lib/libOxTools_LIB.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 OxTools_LIB"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="OxTools_LIB/fast">
+				<Option output="/Users/Jason/Software/OxTools/source/cmake-build-debug/lib/libOxTools_LIB.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/Jason/Software/OxTools/source/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="clang"/>
+				<Compiler>
+					<Add directory="/Users/Jason/Software/root-6.06.00/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/include"/>
+					<Add directory="/Users/Jason/Software/OxTools/source/src"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../include/c++/v1"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/8.0.0/include"/>
+					<Add directory="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/System/Library/Frameworks"/>
+					<Add directory="/Library/Frameworks"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 OxTools_LIB/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/Users/Jason/Software/OxTools/source/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/Camera.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/ChargeResolution.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/Entry.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/Event.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/Filepath.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/HillasParameter.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/Pixel.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/PulseSpectrumFit.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/Run.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/camera_image_plotter.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/charge_resolution_plotter.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/define_rows_and_columns.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/hillas_plots.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/initialise.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/macros.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/simulation.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/timeseries_plotter.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/include/utilities.h">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Camera.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/ChargeResolution.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Entry.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Event.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Filepath.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Filepath_read.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/HillasParameter.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Pixel.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/PulseSpectrumFit.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/Run.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/camera_image_plotter.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/charge_resolution_plotter.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/define_rows_and_columns.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/hillas_plots.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/simulation.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/timeseries_plotter.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src/utilities.cpp">
+			<Option target="OxTools_LIB"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/create_charge_resolution.cpp">
+			<Option target="create_charge_resolution"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/fit_pulse_spectrum.cpp">
+			<Option target="fit_pulse_spectrum"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/join_runs.cpp">
+			<Option target="join_runs"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/plot_camera_image.cpp">
+			<Option target="plot_camera_image"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/plot_hillas.cpp">
+			<Option target="plot_hillas"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/plot_pixel_positions.cpp">
+			<Option target="plot_pixel_positions"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/plot_temp_vs_ped.cpp">
+			<Option target="plot_temp_vs_ped"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/plot_timeseries.cpp">
+			<Option target="plot_timeseries"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/plot_vector_camera_image.cpp">
+			<Option target="plot_vector_camera_image"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/print_file_info.cpp">
+			<Option target="print_file_info"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/run_simulation.cpp">
+			<Option target="run_simulation"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/save_oxroot.cpp">
+			<Option target="save_oxroot"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/src_exe/test_fn.cpp">
+			<Option target="test_fn"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/../../root-6.06.00/cmake/ROOTConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\root-6.06.00\cmake\"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/../../root-6.06.00/cmake/ROOTConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\root-6.06.00\cmake\"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/../../root-6.06.00/cmake/ROOTConfig-targets.cmake">
+			<Option virtualFolder="CMake Files\..\..\root-6.06.00\cmake\"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/../../root-6.06.00/cmake/ROOTConfig-targets-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\root-6.06.00\cmake\"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/../../root-6.06.00/cmake/ROOTUseFile.cmake">
+			<Option virtualFolder="CMake Files\..\..\root-6.06.00\cmake\"/>
+		</Unit>
+		<Unit filename="/Users/Jason/Software/OxTools/source/../../root-6.06.00/cmake/modules/RootNewMacros.cmake">
+			<Option virtualFolder="CMake Files\..\..\root-6.06.00\cmake\modules\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

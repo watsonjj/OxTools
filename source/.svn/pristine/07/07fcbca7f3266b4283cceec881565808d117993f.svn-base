@@ -1,0 +1,99 @@
+//
+// Created by Lucy Martin on 12/12/15.
+//
+
+#ifndef OXTOOLS_SIMULATION_H
+#define OXTOOLS_SIMULATION_H
+
+#include <initialise.h>
+
+unsigned long int photoElectrons(unsigned long int photonsAtPixel);
+double meanDynodeElectrons(double E);
+unsigned long int dynodeElectrons( double incoming, double E);
+void changeToVoltage(TH1F* wave, double resistance, bool noise, double temperature, float bandwidth);
+std::vector<double> dynodePropagation(unsigned long int numberOfPhotoelectrons, bool nsb,
+                                      int dynodes, double V[], bool afterpulsing, bool crosstalk,
+                                      int& crosstalkTracker, bool thermal);
+
+
+//////////////////////////////////////////////////
+// electronic noise
+//////////////////////////////////////////////////
+/*void SetupNoise(float noiserms, float freqminGHz, float freqmaxGHz, std::vector<float>& freq,  std::vector<float>& phase, std::vector<float>& amp)
+{
+
+    float nu = freqmaxGHz; // store amplitudes and frequencies - randomise phases on a channel by channel basis later
+    while (nu > freqminGHz)
+    {
+        float a = 1.0*sqrt(nu/freqmaxGHz); // power in noise is linear with f
+        freq.push_back(nu);
+        amp.push_back(a);
+        nu *= 0.85;
+    }
+    phase.resize(freq.size());
+
+    // Normalise amplitude spectrum
+    TH1F* h1 = new TH1F("noise","",10000,0,5000);
+    TH1F* hv = new TH1F("noiseV","",2000,-100,100);
+    for (unsigned long int n=0; n<freq.size(); ++n)
+    {
+        phase[n] = gRandom->Uniform();
+    }
+    for (int k = 1; k <= h1->GetNbinsX(); ++k)
+    { // one timeslice at a time
+        float t = h1->GetXaxis()->GetBinCenter(k);
+        float dv = 0.0;
+        for (int n=0; n<freq.size(); ++n)
+        {
+            dv += amp[n]*sin(2.0*TMath::Pi()*(phase[n]+t*freq[n]));
+        }
+        h1->SetBinContent(k, dv);
+        hv->Fill(dv);
+    }
+    float norm = hv->GetRMS();
+
+    for (int n=0; n<freq.size(); ++n)
+    {
+        amp[n] *= (noiserms / norm);
+    }
+
+    delete hv;
+    delete h1;
+
+}
+
+void AddElectronicNoise(TH1F* h, float noiserms, float freqmaxGHz)
+{
+
+    float freqminGHz = 1.0/(h->GetXaxis()->GetXmax()-h->GetXaxis()->GetXmin());
+    if (freqmaxGHz < 0) freqminGHz = 1.0/h->GetXaxis()->GetBinWidth(1);
+
+    std::vector<float> freq;
+    std::vector<float> phase;
+    std::vector<float> amp;
+
+    SetupNoise(noiserms, freqminGHz, freqmaxGHz, freq, phase, amp);
+
+    // generate random phases for noise
+    for (int n=0; n<freq.size(); ++n)
+    {
+        phase[n] = gRandom->Uniform();
+    }
+    for (int k = 1; k <= h->GetNbinsX(); ++k)
+    {
+        // one timeslice at a time
+        float t = h->GetXaxis()->GetBinCenter(k);
+        float dv = 0.0;
+        for (int n=0; n<freq.size(); ++n)
+        {
+            float ang = 2.0*TMath::Pi()*(phase[n]+t*freq[n]);
+            dv += amp[n]*sin(ang);
+        }
+        h->SetBinContent(k, h->GetBinContent(k)+(dv*50000));
+    }
+}*/
+
+
+
+
+#endif //OXTOOLS_SIMULATION_H

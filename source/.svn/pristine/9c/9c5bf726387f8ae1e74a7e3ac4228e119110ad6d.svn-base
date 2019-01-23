@@ -1,0 +1,301 @@
+//
+// Created by Jason Watson on 05/02/2016.
+//
+
+#include <simulation.h>
+
+// converting photons into electrons with the photoelectric effect
+unsigned long int photoElectrons(unsigned long int photonsAtPixel)
+{
+	// assume wavelength is 400nm and QE is 35% (from data sheet of PMT)
+	unsigned long int pe = 0;
+	for (unsigned long int i=0; i<photonsAtPixel; ++i)
+	{
+		if (gRandom->Uniform() < 0.35)
+		{
+			pe = pe + 1;
+		}
+
+	}
+	return pe;
+}
+
+// called by dynodeElectrons
+double meanDynodeElectrons(double E)
+{
+	// 21.5 comes from the gain of 3.3*10^5 over the pmt, so on average collision produces (3.3*10^5)^(1/8) electrons,
+	// and on average energy is (1000/9.5), so takes 21.5volts to produce electron.
+	double energyPerElectron = 21.5; // volts
+	if (E<0)
+	{
+		return 0.0;
+	}
+
+	return E/energyPerElectron;
+}
+
+// called by dynodes
+unsigned long int dynodeElectrons( double incoming, double E)
+{
+	double mean = incoming*meanDynodeElectrons(E);
+	// this is counting so use poisson distribution, use poissonD as the number of electrons can be huge
+	return (unsigned long int) gRandom -> PoissonD(mean);
+}
+
+void changeToVoltage(TH1F* wave, double resistance, bool noise, double temperature, float bandwidth)
+{
+	for (int k = 1; k <= wave->GetNbinsX(); ++k)
+	{
+		double electronNumber = wave->GetBinContent(k);
+		// integral gives the number of electrons in the 0.1ns.
+		// amps = coulomb per second. −1 C is equivalent to the charge of approximately 6.242×10^18 electrons.
+		double current = (electronNumber / 6.242E+18) / 0.1E-9;
+		// V=IR
+		double voltage = current * resistance;
+		wave->SetBinContent(k, voltage);
+	}
+	if (noise == 1)
+	{
+		double variance = 4 * temperature * 1.38E-23 * resistance * bandwidth;
+		for (int k = 1; k <= wave->GetNbinsX(); ++k)
+		{
+			wave->SetBinContent(k, wave->GetBinContent(k) + gRandom-> Gaus(0, sqrt(variance)));
+		}
+	}
+
+}
+
+// propagate down the dynodes with a vector for the energy and time of each electron
+std::vector<double> dynodePropagation(unsigned long int numberOfPhotoelectrons, bool nsb, int dynodes, double V[], bool afterpulsing, bool crosstalk, int& crosstalkTracker, bool thermal)
+{
+	// create a vector for the time an electron is produced at and one for the energy it has
+	std::vector<double> electronTime;
+	std::vector<double> electronEnergy;
+	std::vector<double> electronTimeHolder;
+	std::vector<double> electronEnergyHolder;
+
+	// create constant for the time of propagation, here time to traverse the full thing is 6ns
+
+	double timeConst = 4*(sqrt(1000*1.6E-19))/(2*dynodes);
+
+	double gaussianEnergySpread = 3E-18;
+
+	// initially electrons have gaussian energy spread due to slight spread in laser and a slight spread in time as the
+	// pulse isn't a perfect delta function
+	// this is imediately after the cathode
+	unsigned long int electrons = numberOfPhotoelectrons;
+	for (unsigned long int i = 0; i < electrons; i++)
+	{
+
+		// to start with assume the energy of electrons emitted from cathode is a gaussian about 0
+		electronEnergyHolder.push_back(std::abs(gRandom -> Gaus(0, gaussianEnergySpread)));
+
+		// time in ns
+		// assume that the pulse from the laser is  gaussian
+		electronTimeHolder.push_back(gRandom -> Gaus(22, 0.01));
+
+	}
+
+	// adds in the might sky background of poissonian photons randomly distributed throughout the window.
+
+	if (nsb==1)
+	{
+		double n = gRandom->Poisson(0.3);
+		double m = gRandom->Uniform();
+		double l = gRandom->Uniform();
+		if (l<0.35) {
+			for (int i = 0; i < n; i++)
+			{
+				electronEnergyHolder.push_back(std::abs(gRandom->Gaus(0, gaussianEnergySpread)));
+				electronTimeHolder.push_back(gRandom->Gaus((90 * m), 0.8));
+				std::cout << "nsb electron added" << std::endl;
+			}
+		}
+	}
+
+	if (thermal==1)
+	{
+		double n = (unsigned long int) gRandom->Poisson(1.8E-2); // from given value of 20Hz at 25 degrees
+		double m = gRandom->Uniform();
+
+		for (int i = 0; i < n; i++)
+		{
+			electronEnergyHolder.push_back(std::abs(gRandom->Gaus(0, gaussianEnergySpread)));
+			electronTimeHolder.push_back(gRandom->Gaus((90 * m), 0.8));
+			std::cout << "thermal electron added" << std::endl;
+		}
+	}
+
+	// here have added delay of 0.75 ns in for cross talk, with a standard deviation of 0.75 ns, worked out from approximate speed of electron
+
+	if (crosstalk ==1)
+	{
+		double m = gRandom->Uniform();
+		if (m<0.01)
+		{
+			electronEnergyHolder.push_back(std::abs(gRandom->Gaus(0, gaussianEnergySpread)));
+			electronTimeHolder.push_back(gRandom->Gaus(22.75, 0.75));
+			std::cout << "crosstalk electron added" << std::endl;
+			crosstalkTracker += 1;
+		}
+	}
+
+	electrons = electronEnergyHolder.size();
+	// then after the cathode the electrons travel through a voltage and produce more electrons 8 times
+
+	std::array<int,1> skip = {10}; // dynode to skip starts at 0, have to put a value in above number of dynodes to not get a skip
+
+	double lastVoltage = 0.0;
+
+	int dynode = 0;
+
+	// int skipCounter = 0;
+
+	while (dynode<dynodes)
+	{
+		for (unsigned long int f = 0; f<= skip.size() ; f++)
+		{
+			if (dynode == skip[f])
+			{
+				dynode = dynode + 1;
+				std::cout << "skipped" << std::endl;
+			}
+			else
+			{
+
+
+				std::cout<<electrons<< std::endl;
+				double voltDrop = V[dynode] - lastVoltage;
+
+				for (unsigned long int i = 0; i < electrons; i++)
+				{
+
+					long unsigned int numberProduced = dynodeElectrons(1.0, (electronEnergyHolder[i]+voltDrop));
+
+					for (unsigned long int j=0 ; j<numberProduced; j++)
+					{
+						double time = (timeConst)/(sqrt((voltDrop*1.6E-19))+sqrt(electronEnergyHolder[i]));
+
+						if (afterpulsing == 0)
+						{
+							// assumes that at each dynode electrons are emitted with energy that is gaussian about 0
+							electronEnergy.push_back(std::abs(gRandom -> Gaus(0, gaussianEnergySpread)));
+
+							// time in ns
+							// assumes electrons are emitted from dynodes instantaneously and that time differences come from the
+							// energy and propagation time.
+
+							electronTime.push_back((gRandom->Gaus(time, 0.1))+electronTimeHolder[i]);
+						}
+							// if afterpulsing is on then add it as probability
+						else
+						{
+							bool afterPulseCounter = 0;
+
+							double n = gRandom->Uniform();
+							// probability of afterpulsing
+							if (n<0.01)
+							{
+								double m = std::abs(gRandom->Gaus(1, 1));
+								double tempEnergy = (electronEnergyHolder[i]+voltDrop) - (m*(electronEnergyHolder[i]+voltDrop)/2);
+								long unsigned int numberOfAfterpulseElectrons = dynodeElectrons(1.0, tempEnergy);
+								//std::cout << "number of afterpulse electrons" << numberOfAfterpulseElectrons <<endl;
+								for(unsigned long int k = 0; k< numberOfAfterpulseElectrons; k++)
+								{
+									electronEnergy.push_back(std::abs(gRandom -> Gaus(0, gaussianEnergySpread)));
+									// afterpulse with a delay of time taken for pulse to decellerate and accelerate again
+									// gausian distribution where energy is related to time depending on the angle that the
+									// electron is back scattered at. If the angle is shallow the energy will be large but
+									// the time taken short.
+									electronTime.push_back((gRandom->Gaus(time, 0.1))+electronTimeHolder[i]+ (m*time));
+									//std::cout << "afterpulse added" << endl;
+								}
+
+								double probOfScatter = gRandom->Uniform();
+								if (probOfScatter < 0)
+								{
+									afterPulseCounter = 1;
+								}
+
+							}
+
+							if (afterPulseCounter == 0)
+							{
+								// assumes that at each dynode electrons are emitted with energy that is gaussian about 0
+								electronEnergy.push_back(std::abs(gRandom -> Gaus(0, gaussianEnergySpread)));
+
+								// time in ns
+								// assumes electrons are emitted from dynodes instantaneously and that time differences come from the
+								// energy and propagation time.
+								double time = (timeConst)/(sqrt((voltDrop*1.6E-19))+sqrt(electronEnergyHolder[i]));
+								electronTime.push_back((gRandom->Gaus(time, 0.1))+electronTimeHolder[i]);
+							}
+
+						}
+					}
+
+				}
+
+				electronEnergyHolder.clear();
+				electronTimeHolder.clear();
+
+				for (unsigned long int i = 0; i < electronEnergy.size(); i++)
+				{
+					electronEnergyHolder.push_back(electronEnergy[i]);
+					electronTimeHolder.push_back(electronTime[i]);
+				}
+
+				electronEnergy.clear();
+				electronTime.clear();
+
+				lastVoltage = V[dynode];
+				electrons = electronEnergyHolder.size();
+
+				dynode = dynode + 1;
+			}
+		}
+
+	}
+
+
+	std::cout<<electrons<< std::endl;
+
+	// then need one last propagate at the end
+	for (unsigned long int i = 0; i < electrons; i++)
+	{
+		electronEnergy.push_back(electronEnergyHolder[i]);
+		double time = (timeConst) / (sqrt((125 * 1.6E-19)) + sqrt(electronEnergyHolder[i]));
+		electronTime.push_back(electronTimeHolder[i] + (gRandom->Gaus(time, 0.1)));
+		if (afterpulsing == 1)
+		{
+			double n = gRandom->Uniform();
+			if (n < 0.01)
+			{
+				double m = std::abs(gRandom->Gaus(1, 1));
+				// (1000*1.5/9.5) is voltage between last dynode and anode - guard ring?
+				double tempEnergy = (electronEnergyHolder[i]+125) - (m*(electronEnergyHolder[i]+(1000*1.5/9.5))/2);
+				long unsigned int numberOfAfterpulseElectrons = dynodeElectrons(1.0, tempEnergy);
+				//std::cout << "number of afterpulse electrons" << numberOfAfterpulseElectrons <<endl;
+				for (unsigned long int k = 0; k < numberOfAfterpulseElectrons; k++)
+				{
+					electronEnergy.push_back(std::abs(gRandom->Gaus(0, gaussianEnergySpread)));
+					electronTime.push_back((gRandom->Gaus(time, 0.1)) + electronTimeHolder[i] + (m * time));
+					//std::cout << "afterpulse added" << endl;
+				}
+			}
+		}
+	}
+
+
+	std::cout<<"all ok here"<< std::endl;
+
+	electronEnergyHolder.clear();
+	electronTimeHolder.clear();
+
+	//double min = *std::min_element(electronTime,electronTime+electronTime.size());
+	//double max = *std::max_element(electronTime,electronTime+electronTime.size());
+
+
+	return electronTime;
+
+}

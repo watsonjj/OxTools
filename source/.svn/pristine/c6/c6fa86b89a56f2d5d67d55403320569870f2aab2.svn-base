@@ -1,0 +1,144 @@
+//
+// Created by Jason Watson on 20/09/15.
+//
+
+#include <oxtools_ttree_creator.h>
+
+
+void oxtools_ttree_creator(Filepaths &filepaths, string investigation) {
+	Event::SetInvestigation(investigation);
+
+	Print::FunctionStart();
+
+	//TODO: Add headers to root file from text file
+
+	// Set up output filepath
+	filepaths.BuildOutput(".ox.root");
+	filepaths.CreateOutputDirectory();
+
+	// Open output file
+	cout << Print::Level() << "[file] Opening output file: " << filepaths.GetOutput() << endl;
+	TFile *output_root_file = new TFile(filepaths.GetOutput().c_str(), "RECREATE");
+
+	// Create TTrees
+	cout << Print::Level() << "[ttree] Creating event TTree" << endl;
+	TTree *output_event_TTree = new TTree("event", "OxTool TTree containint event data");
+	cout << Print::Level() << "[ttree] Creating pixel TTree" << endl;
+	TTree *output_pixel_TTree = new TTree("pixel", "OxTool TTree containint pixel data");
+
+	// Create holder objects for input to TTree
+	Event event_holder;
+	Pixel pixel_holder;
+
+	// Set ttree addresses
+	event_holder.SetOutputReadhessTTreeBraches(output_event_TTree);
+	pixel_holder.SetOutputTTreeBranches(output_pixel_TTree);
+
+	// Determine if parsing of a readhess text file, or converting of a libCHEC ttree is required
+	if (strcmp(filepaths.GetInputExtension().c_str(),".txt") == 0) {
+		cout << Print::Level() << "[file] Assuming file is a readhess txt file" << endl;
+		string line;
+		std::ifstream file;
+		cout << Print::Level() << "[file] Opening input file: " << filepaths.GetInput() << endl;
+		file.open(filepaths.GetInput().c_str());
+		cout << Print::Level() << "[file] Parsing input file and filling TTrees" << endl;
+
+		int pixel_context_entry_count = 0;
+		int data_other_entry_flag = false;
+		Progress progress(get_file_size(filepaths.GetInput()));
+		Print::LevelIncrease();
+		while(!file.eof()) {
+			progress.AppendPrint(line.length());
+			getline(file, line);
+			if (line.find("CONTENTS") != string::npos) {
+				if (line.find("!JW-PIXEL") != string::npos) {
+					pixel_context_entry_count++;
+				}
+				continue;
+			}
+			else if (line.find("!JW-PIXEL") != string::npos) {
+				if (pixel_context_entry_count < 2) { // Protect against multiple entries of pixels
+					pixel_holder.ParseTxtFileLine(line);
+					output_pixel_TTree->Fill();
+				}
+			}
+			else if (line.find("!JW-DATA") != string::npos) {
+				if (line.find(Event::GetInvestigation()) != string::npos) {
+					event_holder.parse_txt_file_line(line);
+					output_event_TTree->Fill();
+				}
+				else if (!data_other_entry_flag) {
+					cout << Print::Level() << "[file][warning] Multiple investigations inside txt file "
+							          "- Current investigation: " << Event::GetInvestigation() << endl;
+					data_other_entry_flag = true;
+				}
+			}
+		}
+		Print::LevelDecrease();
+		cout << Print::Level() << "[file] Parse Complete - Closing input file" << endl;
+		cout << Print::Level() << "[ttree][event] Current investigation: " << Event::GetInvestigation() << endl;
+		file.close();
+	}
+	else if (strcmp(filepaths.GetInputExtension().c_str(),".root") == 0) {
+		TFile *rootFile = new TFile(filepaths.GetInput().c_str(), "READ");
+		if (rootFile->GetListOfKeys()->Contains("camera_data")) {
+			cout << "[file] Assuming file is a libCHEC TTree file" << endl;
+			TTree *input_tree = (TTree *) rootFile->Get("camera_data");
+			Long64_t nentries = input_tree->GetEntries();
+
+			// Setup filler for pixel ttree
+			Pixel pixel_libchec_holder;
+			pixel_libchec_holder.SetInputTTreeBraches(input_tree);
+
+			// Create set to store unique pixels in
+			set<Pixel> pixel_set;
+
+			cout << Print::Level() << "[ttree] Filling pixel positions" << endl;
+			Progress progress(nentries);
+			for (int i = 0; i < nentries; i++) {
+				progress.Print(i);
+				input_tree->GetEntry(i);
+				pixel_set.insert(pixel_libchec_holder);
+				if ((int)pixel_set.size() >= Pixel::s_max_pixel + 1) break;
+			}
+
+			// Add row and column information
+			pixel_set = define_rows_and_columns(pixel_set);
+
+			// Fill pixel ttree
+			cout << Print::Level() << "[ttree] Filling pixel TTree" << endl;
+			for (Pixel pixel_iter : pixel_set) {
+				pixel_holder = pixel_iter;
+				output_pixel_TTree->Fill();
+			}
+
+			// Clone the tree to get events
+			cout << Print::Level() << "[ttree] Cloning libCHEC TTree for events TTree" << endl;
+			input_tree->SetBranchStatus("fModuleId",0);
+			input_tree->SetBranchStatus("fModulePixelSlot",0);
+			input_tree->SetBranchStatus("fPixelX",0);
+			input_tree->SetBranchStatus("fPixelY",0);
+			input_tree->SetBranchStatus("fPixelZ",0);
+			output_root_file->cd();
+			output_event_TTree = input_tree->CloneTree(nentries);
+			output_event_TTree->SetName("event");
+		}
+		else {
+			throw std::invalid_argument("[file][error] Root file is not libCHEC format!");
+		}
+	}
+	else {
+		throw std::invalid_argument("[file][error] Input file incorrect!");
+	}
+
+	cout << Print::Level() << "[file] TTrees filled successfully - Writing file" << endl;
+	output_root_file->cd();
+	output_event_TTree->Write();
+	output_pixel_TTree->Write();
+	output_root_file->Close();
+	cout << Print::Level() << "[file] ROOT file written." << endl;
+
+	Print::FunctionEnd();
+	Event::ResetStatic();
+	Pixel::ResetStatic();
+}

@@ -1,0 +1,87 @@
+//
+// Created by Jason Watson on 16/09/15.
+//
+
+#ifndef OXTOOLS_ENTRY_H
+#define OXTOOLS_ENTRY_H
+
+#include <initialise.h>
+#include <utilities.h>
+#include <Pixel.h>
+
+class Entry {
+private:
+	 static uint32_t s_nIDGenerator;
+
+	 map<string,float> m_branch_value;
+	 static map<string,float> s_branch_value_max;
+	 static map<string,float> s_branch_value_min;
+
+	 static string s_investigation;
+	 uint32_t m_event;
+	 uint32_t m_source_event;
+	 uint64_t m_event_timestamp;
+	 int m_pixel;
+	 float m_pulse_height;
+	 float m_pulse_area;
+	 float m_pulse_position;
+	 float m_true_npe;
+
+	 static uint32_t s_num_entries;
+	 static uint32_t s_max_event;
+
+	 set<uint32_t> m_eventid_set; // Set for creating incremental id to fix corsika events
+
+public:
+
+	 Entry() {
+		 Reset();
+	 }
+
+	 Entry(string txt_file_line) {
+		 parse_txt_file_line(txt_file_line);
+	 }
+
+	 void Reset();
+	 static void ResetStatic();
+	 void parse_txt_file_line(string txt_file_line);
+	 void SetOutputReadhessTTreeBraches(TTree *&output_TTree);
+	 void SetDefaultOxtoolsInputBranches(TTree *&input_TTree);
+	 void IncludeOxtoolInputBranch(TTree *&input_TTree, vector<string> branch_name_vector);
+	 void IncludeOxtoolInputBranch(TTree *&input_TTree, string branch_name);
+	 float GetBranchValue(string branch_name);
+	 void SetTTreeNum(TTree *input_TTree);
+
+	 static float GetBranchMin(string branch_name) {return s_branch_value_min[branch_name];}
+	 static float GetBranchMax(string branch_name) {return s_branch_value_max[branch_name];}
+
+	 bool operator <(const Entry & other) const {
+		 return m_event < other.m_event;
+	 }
+
+	 static string GetInvestigation() {return s_investigation;}
+	 uint32_t GetEvent() {return m_event;}
+	 uint32_t GetSourceEvent() {return m_source_event;}
+	 int GetPixel() {return m_pixel;}
+	 static uint32_t GetNumEntries() {return s_num_entries;}
+	 static uint32_t GetMaxEvent() {return s_max_event;}
+	 static void SetInvestigation(string investigation) {s_investigation = investigation;}
+
+
+	 /* TODO
+	 * add id
+	 * event and corsika event
+	 * add parsing txt file/ttree to .C
+	 * fill ttree? as each class will have its own ttree
+	 * when creating object from reading ttree, set num_events???
+	 */
+
+};
+
+vector<vector<Entry>> GetOxtoolEntryArray(TTree *event_TTree,
+                                          vector<string> branch_name);
+vector<vector<Entry>> GetOxtoolEntryArray(TTree *event_TTree,
+                                          string branch_name);
+
+
+#endif //OXTOOLS_ENTRY_H

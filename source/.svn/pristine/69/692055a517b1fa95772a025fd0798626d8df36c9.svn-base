@@ -1,0 +1,129 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Run.h>
+
+uint32_t Run::s_nIDGenerator = 0;
+
+Run::Run(fs::path input_root_filepath, vector<string> branch_name_vector) {
+	Reset();
+	cout << Print::Level() << "[run] Building new run: " << m_run_id << endl;
+	SetOxRootFilepath(input_root_filepath);
+	SetPixelTTree();
+	SetEventTTree();
+	SetEventTTreeNum();
+	BuildRunCamera();
+	BuildRunEventMap(branch_name_vector);
+}
+
+void Run::Reset() {
+	SetID();
+	m_oxroot_filepath = "";
+	delete m_rootFile;
+	m_rootFile = nullptr;
+	delete m_event_ttree;
+	m_event_ttree = nullptr;
+	delete m_pixel_ttree;
+	m_pixel_ttree = nullptr;
+	m_event_map.clear();
+	m_num_events = 0;
+	m_num_entries = 0;
+	m_branchmap_value_max.clear();
+	m_branchmap_value_min.clear();
+	m_branchmap_value_min_positive.clear();
+	m_camera.reset();
+}
+
+void Run::SetOxRootFilepath(fs::path input_root_filepath) {
+	cout << Print::Level() << "[run][file] Attaching OxRoot file to Run" << m_run_id << ": " << input_root_filepath << endl;
+	m_oxroot_filepath = input_root_filepath;
+	m_rootFile = new TFile(m_oxroot_filepath.c_str(), "READ");
+}
+
+void Run::SetEventTTree() {
+	cout << Print::Level() << "[run][ttree][event] Attaching event ttree to Run" << m_run_id << endl;
+	m_event_ttree = (TTree *) m_rootFile->Get("event");
+}
+
+void Run::SetPixelTTree() {
+	cout << Print::Level() << "[run][ttree][pixel] Attaching pixel ttree to Run" << m_run_id << endl;
+	m_pixel_ttree = (TTree *) m_rootFile->Get("pixel");
+}
+
+void Run::SetEventTTreeNum() {
+	m_num_events = (uint32_t) (m_event_ttree->GetMaximum("fEventIndex") + 1);
+	m_num_entries = (uint32_t) m_event_ttree->GetEntries();
+	if (m_num_entries == 0) throw std::invalid_argument("[ttree][error] Event TTree is empty!");
+	cout << Print::Level() << "[ttree][event] Number of events set to: " << m_num_events << endl;
+	cout << Print::Level() << "[ttree][event] Total number of entries set to: " << m_num_entries << endl;
+}
+
+void Run::SetMinMaxBranchValues(vector<string> branch_name_vector) {
+	for (auto branch_name : branch_name_vector) {
+		if (!check_TTree_branch_exists(m_event_ttree, branch_name.c_str()))
+			throw std::invalid_argument(
+					  "[ttree][error] Event TTree does not contain branch");
+		m_branchmap_value_max[branch_name] = ((float) (m_event_ttree->GetMaximum(
+				  branch_name.c_str())));
+		cout << Print::Level() << "[ttree][event] Branch maximum set to: " <<
+		m_branchmap_value_max[branch_name] << endl;
+		m_branchmap_value_min[branch_name] = ((float) (m_event_ttree->GetMinimum(
+				  branch_name.c_str())));
+		cout << Print::Level() << "[ttree][event] Branch minimum set to: " <<
+		m_branchmap_value_min[branch_name] << endl;
+		m_branchmap_value_min_positive[branch_name] = m_branchmap_value_min[branch_name];
+		if (m_branchmap_value_min_positive[branch_name] < 0) {
+			cout << Print::Level() <<
+			"[ttree][event] Min (positive) branch value updated: " <<
+			m_branchmap_value_min_positive[branch_name] << " -> " << 0 << endl;
+			m_branchmap_value_min_positive[branch_name] = 0;
+		}   // some outliers go below 0
+	}
+}
+
+void Run::BuildRunCamera() {
+	//TODO: remove static from pixel class
+	Print::FunctionStart();
+	Camera_ptr camera(new Camera(m_pixel_ttree));
+	m_camera = camera;
+	Print::FunctionEnd();
+}
+
+void Run::BuildRunEventMap(vector<string> branch_name_vector) {
+	Print::FunctionStart();
+	cout << Print::Level() << "[run] Building Run Events" << endl;
+
+	// Create object and assign addresses for TTree branches
+	Entry event_holder;
+	event_holder.SetDefaultOxtoolsInputBranches(m_event_ttree);
+	event_holder.IncludeOxtoolInputBranch(m_event_ttree, branch_name_vector);
+	SetMinMaxBranchValues(branch_name_vector);
+
+	cout << Print::Level() << "[run][ttree] Extracting entries from TTree" << endl;
+	Progress progress(m_num_entries);
+	// Fill event information
+	for (uint32_t i = 0; i < m_num_entries; i++) {
+		progress.Print(i);
+		m_event_ttree->GetEntry(i);
+		event_holder.SetTreeIndex(i);
+		AddEventEntry(event_holder);
+	}
+	Print::FunctionEnd();
+}
+
+void Run::AddEventEntry(Entry entry_holder) {
+	// avoid duplicate entries (produced by inactive modules)
+	if (!m_bool_entry_map[entry_holder.GetEvent()][entry_holder.GetPixel()]) {
+		m_event_map[entry_holder.GetEvent()].AddEntry(entry_holder);
+		m_event_map[entry_holder.GetEvent()].event_index = entry_holder.GetEvent();
+		m_bool_entry_map[entry_holder.GetEvent()][entry_holder.GetPixel()] = true;
+	}
+}
+
+Event* Run::GetEvent(uint32_t event_id)  {
+	if (!m_event_map.count(event_id)) {
+		throw std::invalid_argument("[event][error] Event does not exist");
+	}
+	return &m_event_map[event_id];
+}

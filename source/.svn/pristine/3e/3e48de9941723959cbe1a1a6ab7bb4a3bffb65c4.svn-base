@@ -1,0 +1,119 @@
+//
+// Created by Jason Watson on 18/02/2016.
+//
+
+#ifndef OXTOOLS_CHARGERESOLUTION_H
+#define OXTOOLS_CHARGERESOLUTION_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Run;
+
+class ChargeResolution {
+	 friend class Run;
+private:
+	 ChargeResolution(Run* parent, string trueBranch, string measuredBranch)
+			   : pRun(parent),
+			     mTrueBranch(trueBranch),
+			     mMeasuredBranch(measuredBranch)
+	 {
+		 Init();
+		 if (!mStaticSetup) {
+			SetStatic();
+		 }
+		 FillCharges();
+		 SetChargeResolution();
+	 }
+	 Run* pRun;
+	 string mTrueBranch;
+	 string mMeasuredBranch;
+	 map<int,double> mSumMap;
+	 map<int,int> mNMap;
+	 map<int,TH1F*> mHistMap_heide;
+	 TGraphErrors* mChargeResolutionGraph;
+	 TGraphErrors* mChargeResolutionScaledGraph;
+	 TH2F* mVariationHist;
+	 double mScoreOverall;
+	 double mScoreLow;
+	 double mScoreHigh;
+
+	 static int mMaxNPE;
+	 static bool mStaticSetup;
+	 static map<int,double> mRequirementMap;
+	 static map<int,double> mGoalMap;
+	 static map<int,double> mScaleMap;
+	 static int mScaleMax;
+	 static TGraph* mRequirementGraph;
+	 static TGraph* mRequirementScaledGraph;
+	 static TGraph* mGoalGraph;
+	 static TGraph* mGoalScaledGraph;
+	 static TGraph* mTestGraph;
+	 static double mLowCut1;
+	 static double mLowCut2;
+	 static double mHighCut1;
+	 static double mHighCut2;
+
+	 void Init();
+	 static void SetStatic();
+	 void FillCharges();
+	 void SetChargeResolution(); // Fills all the members of ChargeResolution
+	 static void SetRequirementMap();
+	 static void SetGoalMap();
+	 static void SetRequirementGraph();
+	 static void SetGoalGraph();
+	 static void SetTestGraph();
+
+public:
+	 GET(ChargeResolutionGraph, mChargeResolutionGraph, TGraphErrors*);
+	 GET(ChargeResolutionScaledGraph, mChargeResolutionScaledGraph, TGraphErrors*);
+	 GET(VariationHist,mVariationHist,TH2F*);
+
+	 GET(ScoreOverall, mScoreOverall, double);
+	 GET(ScoreLow, mScoreLow,double);
+	 GET(ScoreHigh,mScoreHigh,double);
+
+	 static void ResetMaxNPE() {
+		 mMaxNPE = 1000;
+	 }
+	 static void SetMaxNPE(int max_npe) {
+		 mMaxNPE = max_npe;
+	 }
+	 static TGraph* GetRequirementGraph() {
+		 if (!mRequirementGraph) {
+			 SetStatic();
+		 }
+		 return mRequirementGraph;
+	 }
+	 static TGraph* GetRequirementScaledGraph() {
+		 if (!mRequirementGraph) {
+			 SetStatic();
+		 }
+		 return mRequirementScaledGraph;
+	 }
+	 static TGraph* GetGoalGraph() {
+		 if (!mRequirementGraph) {
+			 SetStatic();
+		 }
+		 return mGoalGraph;
+	 }
+	 static TGraph* GetGoalScaledGraph() {
+		 if (!mRequirementGraph) {
+			 SetStatic();
+		 }
+		 return mGoalScaledGraph;
+	 }
+	 static TGraph* GetTestGraph() {
+		 if (!mRequirementGraph) {
+			 SetStatic();
+		 }
+		 return mTestGraph;
+	 }
+	 static double GetLowCut1() {return mLowCut1;}
+	 static double GetLowCut2() {return mLowCut2;}
+	 static double GetHighCut1() {return mHighCut1;}
+	 static double GetHighCut2() {return mHighCut2;}
+};
+
+
+#endif //OXTOOLS_CHARGERESOLUTION_H

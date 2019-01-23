@@ -1,0 +1,174 @@
+//
+// Created by Jason Watson on 18/02/2016.
+//
+
+#include "ChargeResolution.h"
+#include <Run.h>
+
+void ChargeResolution::Init() {
+	mSumMap.clear();
+	mNMap.clear();
+}
+
+void ChargeResolution::FillCharges() {
+	COUTP("[chargeres] Extracting entry information");
+	mVariationHist = new TH2F("","",(int)log10(mMaxNPE)*50,log10(1),log10(mMaxNPE),(int)log10(mMaxNPE)*50,log10(1),log10(mMaxNPE));
+	mVariationHist->SetStats(0);
+	Progress progress(pRun->GetNumEventTTreeEntries());
+	int i = 0;
+	for (auto& camera_pair : pRun->GetCameraMap()) {
+		auto& camera = camera_pair.second;
+		for (auto& event_pair : camera.GetEventMap()) {
+			auto& event = event_pair.second;
+			for (auto& entry_pair : event.GetEntryMap()) {
+				auto& entry = entry_pair.second;
+				progress.Print(i++);
+				int trueQ = (int) entry.GetBranchValue(mTrueBranch);
+				float measuredQ = entry.GetBranchValue(mMeasuredBranch);
+				if (trueQ <= mMaxNPE) {
+					mSumMap[trueQ] += pow(measuredQ - trueQ, 2);
+					mNMap[trueQ]++;
+					mVariationHist->Fill(log10(trueQ),log10(measuredQ));
+				}
+			}
+		}
+	}
+}
+
+void ChargeResolution::SetChargeResolution() {
+	mChargeResolutionGraph = new TGraphErrors();
+	mChargeResolutionScaledGraph = new TGraphErrors();
+	for (int trueQ = 1; trueQ <= mMaxNPE; trueQ++) {
+		if (mNMap[trueQ] > 0) {
+			double chargeres = sqrt((mSumMap[trueQ] / mNMap[trueQ]) + trueQ) / trueQ;
+			double chargeres_error = chargeres*(1/sqrt(2*mNMap[trueQ]));
+
+			int current_point = mChargeResolutionGraph->GetN();
+			mChargeResolutionGraph->SetPoint(current_point, trueQ, chargeres);
+//			mChargeResolutionGraph->SetPointError(current_point, 0, chargeres_error);
+			if (trueQ <= mBenchmarks.mScaleMax) {
+				mChargeResolutionScaledGraph->SetPoint(current_point, trueQ, chargeres / mBenchmarks.mScaleMap[trueQ]);
+//				mChargeResolutionScaledGraph->SetPointError(current_point, 0, chargeres_error / mBenchmarks.mScaleMap[trueQ]);
+			}
+		}
+	}
+}
+
+map<string,double> ChargeResolution::GetScores(double low1, double low2, double high1, double high2) {
+	map<string,double> scores;
+	for (int trueQ = 1; trueQ <= mMaxNPE; trueQ++) {
+		if (mNMap[trueQ] > 0) {
+			double chargeres = sqrt((mSumMap[trueQ] / mNMap[trueQ]) + trueQ) / trueQ;
+			// Scoring
+			scores["overall"] += chargeres;
+			if (trueQ > low1 && trueQ <= low2) {
+				scores["low"] += chargeres;
+			}
+			else if (trueQ > high1 && trueQ <= high2){
+				scores["high"] += chargeres;
+			}
+		}
+	}
+	return scores;
+}
+
+void ChargeResolutionBenchmarks::SetRequirementMap() {
+	double Nnsb = sqrt(4.0+3.0);
+	double Nadd = 0;
+	double ENF = 1.2;
+	double sigma2 = 0.1;
+	int defined_npe = 1000;
+
+	for (int trueNPE = 1; trueNPE<defined_npe; trueNPE++) {
+		if (trueNPE < mMaxNPE) {
+			double value = sqrt((Nnsb + Nadd) + pow(ENF, 2) * trueNPE + pow(sigma2 * trueNPE, 2)) / trueNPE;
+			mRequirementMap[trueNPE] = value;
+		}
+	}
+}
+
+void ChargeResolutionBenchmarks::SetGoalMap() {
+	double Nnsb = 2;
+	double Nadd = 0;
+	double ENF = 1.1152;
+	double sigma2 = 0.05;
+	int defined_npe = 2000;
+
+	for (int trueNPE = 1; trueNPE<defined_npe; trueNPE++) {
+		if (trueNPE < mMaxNPE) {
+			double value = sqrt((Nnsb + Nadd) + pow(ENF, 2) * trueNPE + pow(sigma2 * trueNPE, 2)) / trueNPE;
+			mGoalMap[trueNPE] = value;
+		}
+	}
+}
+
+void ChargeResolutionBenchmarks::SetPoissonMap() {
+	for (int trueNPE = 1; trueNPE<mMaxNPE; trueNPE++) {
+		double value = sqrt(trueNPE) / trueNPE;
+		mPoissonMap[trueNPE] = value;
+	}
+}
+
+void ChargeResolutionBenchmarks::SetRequirementGraph() {
+	mRequirementGraph = new TGraph();
+	mRequirementScaledGraph = new TGraph();
+	for (auto& it : mRequirementMap) {
+		int current_point = mRequirementGraph->GetN();
+		mRequirementGraph->SetPoint(current_point, it.first, it.second);
+		if (it.first <= mScaleMax) {
+			mRequirementScaledGraph->SetPoint(current_point, it.first, it.second / mScaleMap[it.first]);
+		}
+	}
+	mRequirementGraph->SetMarkerColor(kRed);
+	mRequirementGraph->SetMarkerStyle(2);
+	mRequirementGraph->SetMarkerSize(0);
+	mRequirementGraph->SetLineColor(kRed);
+	mRequirementScaledGraph->SetMarkerColor(kRed);
+	mRequirementScaledGraph->SetMarkerStyle(2);
+	mRequirementScaledGraph->SetMarkerSize(0);
+	mRequirementScaledGraph->SetLineColor(kRed);
+}
+
+void ChargeResolutionBenchmarks::SetGoalGraph() {
+	mGoalGraph = new TGraph();
+	mGoalScaledGraph = new TGraph();
+	for (auto& it : mGoalMap) {
+		int current_point = mGoalGraph->GetN();
+		mGoalGraph->SetPoint(current_point, it.first, it.second);
+		if (it.first <= mScaleMax) {
+			mGoalScaledGraph->SetPoint(current_point, it.first, it.second / mScaleMap[it.first]);
+		}
+	}
+	mGoalGraph->SetMarkerColor(kGreen);
+	mGoalGraph->SetMarkerStyle(2);
+	mGoalGraph->SetMarkerSize(0);
+	mGoalGraph->SetLineColor(kGreen);
+	mGoalGraph->SetLineStyle(7);
+	mGoalScaledGraph->SetMarkerColor(kGreen);
+	mGoalScaledGraph->SetMarkerStyle(2);
+	mGoalScaledGraph->SetMarkerSize(0);
+	mGoalScaledGraph->SetLineColor(kGreen);
+	mGoalScaledGraph->SetLineStyle(7);
+}
+
+void ChargeResolutionBenchmarks::SetPoissonGraph() {
+	mPoissonGraph = new TGraph();
+	mPoissonScaledGraph = new TGraph();
+	for (auto& it : mPoissonMap) {
+		int current_point = mPoissonGraph->GetN();
+		mPoissonGraph->SetPoint(current_point, it.first, it.second);
+		if (it.first <= mScaleMax) {
+			mPoissonScaledGraph->SetPoint(current_point, it.first, it.second / mScaleMap[it.first]);
+		}
+	}
+	mPoissonGraph->SetMarkerColor(kGray);
+	mPoissonGraph->SetMarkerStyle(2);
+	mPoissonGraph->SetMarkerSize(0);
+	mPoissonGraph->SetLineColor(kGray);
+	mPoissonGraph->SetLineStyle(9);
+	mPoissonScaledGraph->SetMarkerColor(kGray);
+	mPoissonScaledGraph->SetMarkerStyle(2);
+	mPoissonScaledGraph->SetMarkerSize(0);
+	mPoissonScaledGraph->SetLineColor(kGray);
+	mPoissonScaledGraph->SetLineStyle(9);
+}

@@ -1,0 +1,26 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Event.h>
+
+void Event::Init() {
+	mEventIndex = 0;
+	mBranchValueMinMap.clear();
+	mBranchValueMaxMap.clear();
+	mEntryMap.clear();
+}
+
+void Event::AddEntry(const Entry &entry_holder) {
+	mEntryMap[entry_holder.mPixel] = entry_holder;
+	mEventIndex = entry_holder.GetEvent();
+	for (const auto &branch_pair : entry_holder.mBranchValueMap) {
+		const auto branch_name = branch_pair.first;
+		const auto branch_value = branch_pair.second;
+		if (!mBranchValueMinMap.count(branch_name) || mBranchValueMinMap[branch_name] > branch_value) {
+			mBranchValueMinMap[branch_name] = branch_value;
+		}
+		if (!mBranchValueMaxMap.count(branch_name) || mBranchValueMaxMap[branch_name] < branch_value)
+			mBranchValueMaxMap[branch_name] = branch_value;
+	}
+}

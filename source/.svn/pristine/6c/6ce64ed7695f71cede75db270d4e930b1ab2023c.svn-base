@@ -1,0 +1,23 @@
+//
+// Created by Jason Watson on 01/10/15.
+//
+
+#ifndef OXTOOLS_CHARGE_RESOLUTION_PLOTTER_H
+#define OXTOOLS_CHARGE_RESOLUTION_PLOTTER_H
+
+#include <initialise.h>
+#include <Filepaths.h>
+#include <Event.h>
+
+bool charge_resolution_plotter(set<fs::path> input_filepath_set, bool save_images,
+                               string output_name, uint32_t max_npe = 1000);
+vector<map<int,float>> charge_resolution_map(Filepaths filepaths,
+                                            bool save_images = false, uint32_t max_npe = 1000);
+void remove_empty_elements(std::vector<float> &vector_y, std::vector<float> &vector_x);
+void print_requirement_goal();
+map<int,float> charge_resolution_requirement_map(uint32_t max_npe);
+map<int,float> charge_resolution_goal_map(uint32_t max_npe);
+vector<float> charge_resolution_requirement_vector();
+vector<float> charge_resolution_goal_vector();
+
+#endif //OXTOOLS_CHARGE_RESOLUTION_PLOTTER_H

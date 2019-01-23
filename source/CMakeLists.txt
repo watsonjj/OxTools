@@ -1,0 +1,78 @@
+cmake_minimum_required(VERSION 2.8)
+project(OxTools)
+set(PROJECT_NAME OxTools)
+
+# Hide a warning message appears on OS X when CMake 3.0.2 or later is used.
+# "Policy CMP0042 is not set: MACOSX_RPATH is enabled by default."
+# See e.g. http://www.cmake.org/Wiki/CMake_RPATH_handling#Mac_OS_X_and_the_RPATH
+if(APPLE)
+  set(CMAKE_MACOSX_RPATH 0)
+endif()
+
+### Compiler settings
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
+
+### add CERN ROOT to external libraries
+find_package(ROOT REQUIRED Graf Gpad Hist RIO Tree MathCore)
+include(${ROOT_USE_FILE})
+list(APPEND EXTLIBS ${ROOT_LIBRARIES})
+
+### find Boost headers and some static libraries
+set(Boost_USE_STATIC_LIBS        ON) # only find static libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package(Boost 1.36.0 COMPONENTS regex filesystem system)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  list(APPEND EXTLIBS ${Boost_LIBRARIES})
+endif()
+
+### Source directories
+set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
+set(SRC_EXE_DIR ${CMAKE_SOURCE_DIR}/src_exe)
+
+### Binary output directories
+set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}/lib")
+set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin")
+
+### Set the rpath directory for installing shared libraries
+# SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+### Include the directories so c++ includes work
+include_directories(${INCLUDE_DIR})
+include_directories(${SRC_DIR})
+
+### Gather src files
+aux_source_directory(${SRC_DIR} SRCS)
+
+### Creat a dictionary - not sure when this is required
+#  ROOT_GENERATE_DICTIONARY(mylib_Dict my_utilities.h LINKDEF my_utilities_LinkDef.h)
+# list(APPEND SRCS mylib_Dict.cxx)
+
+### Gather header files
+file(GLOB INCS "${INCLUDE_DIR}/*h")
+
+### Create a library for all srcs
+#add_library(${PROJECT_NAME}_LIB SHARED ${SRCS} ${INCS})
+add_library(${PROJECT_NAME}_LIB STATIC ${SRCS} ${INCS})
+target_link_libraries(${PROJECT_NAME}_LIB ${EXTLIBS})
+  
+### FIX to prepend @rpath if shared library cannot be found
+# set_target_properties(${PROJECT_NAME}_LIB PROPERTIES INSTALL_NAME_DIR "@rpath")
+
+### Set rule for installing
+#install(TARGETS ${PROJECT_NAME}_LIB LIBRARY DESTINATION lib)
+
+### Gather exec files
+aux_source_directory(${SRC_EXE_DIR} EXECS)
+
+### Loop through each executable src
+foreach(EXEC ${EXECS})
+    get_filename_component(EXEC ${EXEC} NAME_WE)
+    if(NOT "${EXEC}" STREQUAL "") # skip filenames starting with "." e.g. Emacs tmp files
+      add_executable(${EXEC} ${SRC_EXE_DIR}/${EXEC}.cpp)
+      target_link_libraries(${EXEC} ${PROJECT_NAME}_LIB ${EXTLIBS})
+      install(TARGETS ${EXEC} RUNTIME DESTINATION .)
+    endif()
+endforeach()

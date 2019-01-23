@@ -1,0 +1,57 @@
+//
+// Created by Jason Watson on 18/09/15.
+//
+
+#include "Pixel.h"
+
+void Pixel::Reset() {
+	m_pixel          = 0;
+	m_module         = 0;
+	m_module_pixel   = 0;
+	m_module_pixel_slot = 0;
+	m_xpix           = 0;
+	m_ypix           = 0;
+	m_zpix           = 0;
+	m_row            = 0;
+	m_column         = 0;
+}
+
+void Pixel::ParseTxtFileLine(string txt_file_line) {
+	std::istringstream iss(txt_file_line);
+	string context;
+	iss >> context;
+	iss >> m_pixel;
+	iss >> m_module;
+	iss >> m_module_pixel;
+	iss >> m_xpix;
+	iss >> m_ypix;
+	iss >> m_zpix;
+	iss >> m_row;
+	iss >> m_column;
+}
+
+void Pixel::SetOutputTTreeBranches(TTree *&output_TTree) {
+	output_TTree->Branch("fPixelId", &m_pixel, "fPixelId/I");
+	output_TTree->Branch("fModuleId", &m_module, "fModuleId/I");
+	output_TTree->Branch("fModulePixelSlot", &m_module_pixel_slot, "fModulePixelSlot/I");
+	output_TTree->Branch("fPixelX", &m_xpix, "fPixelX/F");
+	output_TTree->Branch("fPixelY", &m_ypix, "fPixelY/F");
+	output_TTree->Branch("fPixelZ", &m_zpix, "fPixelZ/F");
+	output_TTree->Branch("fPixelRow", &m_row, "fPixelRow/I");
+	output_TTree->Branch("fPixelColumn", &m_column, "fPixelColumn/I");
+};
+
+void Pixel::SetInputTTreeBranches(TTree *&input_tree) {
+	input_tree->SetBranchAddress("fPixelId", &m_pixel);
+	input_tree->SetBranchAddress("fModuleId", &m_module);
+	input_tree->SetBranchAddress("fModulePixelSlot", &m_module_pixel_slot);
+	input_tree->SetBranchAddress("fPixelX", &m_xpix);
+	input_tree->SetBranchAddress("fPixelY", &m_ypix);
+	input_tree->SetBranchAddress("fPixelZ", &m_zpix);
+	if (check_TTree_branch_exists(input_tree, "fPixelRow")
+	    && check_TTree_branch_exists(input_tree, "fPixelColumn")) {
+		input_tree->SetBranchAddress("fPixelRow", &m_row);
+		input_tree->SetBranchAddress("fPixelColumn", &m_column);
+	}
+};
+

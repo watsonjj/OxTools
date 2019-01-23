@@ -1,0 +1,309 @@
+//
+// Created by Lucy Martin on 02/11/15.
+//
+
+// Calculate values of Sn and Mn with the values of S1 and M1 given in the paper
+// These values would usually be produced from a fit.
+#include <array>
+#include <vector>
+#include <iostream>
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TAxis.h>
+#include <TMath.h>
+#include <TApplication.h>
+#include <TMultiGraph.h>
+#include <cstdlib>
+
+
+
+int main() {
+
+    TApplication *rootapp = new TApplication("example", 0, 0); // Allows graphics to be seen when using g++
+
+    // define the values of n that are going to be used
+    int  n, nMin, nMax;
+    nMin = 1;
+    nMax = 12;
+    int number = (nMax - nMin) + 1;
+
+    // make array of n values
+    int nValues[(nMax - nMin)+1];
+
+    for (int i = 0; i <= (nMax - nMin); ++i) {
+        nValues[i] = nMin + i;
+    }
+
+    // want to plot multiple n graphs in one for comparison
+
+    // Starting lognormal distribution as vector so can rescale when needed
+
+    std::vector<double> lognormal;
+    lognormal.clear();
+    std::vector<double> convolution;
+    std::vector<double> x;
+    x.reserve(2000);
+    x.clear();
+    std::vector<double> holder;
+    holder.reserve(2000);
+    holder.clear();
+
+
+    // initialise canvas and multigraph
+
+    TCanvas *c1 = new TCanvas("c1", "lognormal distribution", 200, 10, 700, 500);
+    TGraph *gr[number];
+    TMultiGraph *mg = new TMultiGraph();
+
+
+    // here instead of using the functions from the paper, do the convolution "by hand" by multiplying the lognormal
+    // distributions together, will have to normalise. Also the convolution will be a different size to the initial vector.
+
+    // define the lognormal size and fill with distribution, define convolution initial size
+    double lognormal_pdf;
+    double m = -3.5;
+    double s = 0.3;
+
+    for (int j = 0; j < 100; ++j) {
+        convolution.push_back (0);
+        holder.push_back (0);
+
+
+        if ((j*0.001) <= 0) {
+            lognormal_pdf = 0.0;
+            }
+            else {
+            double tmp = (std::log((j*0.001)) - m)/s;
+            lognormal_pdf = 1.0 / ((j*0.001) * std::fabs(s) * std::sqrt(2 * M_PI)) * std::exp(-(tmp * tmp) /2);
+        }
+
+        lognormal.push_back (lognormal_pdf);
+    }
+
+    // Finding the sum of the lognormal in an attempt to normalise.
+
+    double sumLognormal = 0;
+    for (int j = 0; j < lognormal.size(); ++j) {
+        sumLognormal = sumLognormal + lognormal[j];
+    }
+
+
+    //Print lognormal to check it looks right
+
+    //std::cout<< sumLognormal << std::endl;
+
+    for (int j = 0; j < lognormal.size(); ++j) {
+        std::cout << convolution[j] << std::endl;
+        std::cout << lognormal[j]  << std::endl;
+    }
+
+    // looks fine to here, next bit does something different every time i run it.
+
+
+
+
+
+
+
+
+///////////
+
+    // Starting value of the length of the convolution, as the first one doesn't have a convolution, it's just the lognormal.
+
+    int lengthConv = convolution.size();
+
+    for (int l = 0; l <= (nMax - nMin); l++) {
+
+        // convolution process, convolves the lognormal with the previous convolution, which grows in size each iteration.
+
+        std::cout << "for n = " << l+1 << std::endl;
+        std::cout << "lengthConv = " << lengthConv << std::endl;
+
+
+        for (int i = 0; i < lengthConv; i++) {
+
+            int i1 = i;
+            double tmp = 0.0;
+
+            if (l==0) {
+                convolution[i] = convolution[i] + lognormal[i];
+            }
+            else {
+                // actual convolution bit
+                for (int j=0; j<lognormal.size(); j++) {
+
+                    if (i1 >= 0 && i1 < lengthConv) {
+
+                        tmp += (holder[i1] * lognormal[j]);
+
+                    }
+
+                    i1 = i1 - 1;
+
+                }
+
+                convolution.push_back (tmp);
+                //std::cout<< tmp << endl;
+
+            }
+            x.push_back (0.001*i);
+        }
+
+        for (int i = 0; i < convolution.size(); ++i) {
+            if (isnan(convolution[i]) == 1){
+                convolution[i]=0.0;
+            }
+        }
+
+        // sum for normalisation
+        long double sumConvolution = 0;
+        for (int i = 0; i < lengthConv; ++i) {
+            sumConvolution = sumConvolution + convolution[i];
+        }
+
+
+        std::cout << "sum Convolution = " << sumConvolution << std::endl;
+
+
+        // normalise and create x vector
+        for (int i = 0; i < convolution.size(); ++i) {
+            convolution[i] = convolution[i]*(sumLognormal/sumConvolution);
+
+        }
+
+        // .data() was googled solution to having a float input
+        gr[l] = new TGraph(convolution.size(), x.data() , convolution.data());
+        mg->Add(gr[l]);
+
+        // clear holder
+        holder.clear();
+        if (holder.empty() == 0){
+            std::cout << "HOLDER NOT EMPTY" << std::endl;
+            exit(1);
+        }
+
+        // reset holder with values from the convolution
+        for (int j = 0; j < convolution.size(); ++j) {
+            //std::cout << convolution[j] << x[j]<< endl;
+            holder.push_back (convolution[j]);
+        }
+
+        std::cout << holder.size() << std::endl;
+
+
+        //std::cout << "holder" << endl;
+        //for (int j = 0; j < holder.size(); ++j) {
+        //    std::cout << holder[j] << x[j]<< endl;
+        //}
+
+
+        lengthConv = lengthConv+99;
+
+        // clear convolution and the x vector
+        x.clear ();
+        if (x.empty() == 0){
+            std::cout << "X NOT EMPTY" << std::endl;
+            exit(1);
+        }
+        convolution.clear ();
+        if (convolution.empty() == 0){
+            std::cout << "CONVOLUTION NOT EMPTY" << std::endl;
+            exit(1);
+        }
+
+    }
+
+    mg->Draw("AL");
+    mg->SetTitle("lognormals through convolution");
+    mg->GetXaxis()->SetTitle("Voltage");
+    mg->GetYaxis()->SetTitle("Frequancy");
+
+
+
+    // Add poisson bit to add the functions together
+    std::array<double, 500> xPoints;
+    std::array<double, 500> yPoints1;
+    std::array<double, 500> yPoints2;
+    std::array<double, 500> yPoints3;
+    std::array<double, 500> yPoints4;
+    std::array<double, 500> yPoints5;
+    std::array<double, 500> yPoints6;
+    std::array<double, 500> yPoints7;
+    std::array<double, 500> yPoints8;
+    std::array<double, 500> yPoints9;
+    std::array<double, 500> yPoints10;
+    std::array<double, 500> yPoints11;
+    std::array<double, 500> yPoints12;
+    std::array<double, 500> combArray;
+
+
+    for (int i= 0; i<xPoints.size(); ++i){
+        xPoints[i] = i*0.001;
+    }
+
+
+    for (int i= 0; i<xPoints.size(); ++i) {
+        yPoints1[i] = gr[0]->Eval(xPoints[i]);
+        yPoints2[i] = gr[1]->Eval(xPoints[i]);
+        yPoints3[i] = gr[2]->Eval(xPoints[i]);
+        yPoints4[i] = gr[3]->Eval(xPoints[i]);
+        yPoints5[i] = gr[4]->Eval(xPoints[i]);
+        yPoints6[i] = gr[5]->Eval(xPoints[i]);
+        yPoints7[i] = gr[6]->Eval(xPoints[i]);
+        yPoints8[i] = gr[7]->Eval(xPoints[i]);
+        yPoints9[i] = gr[8]->Eval(xPoints[i]);
+        yPoints10[i] = gr[9]->Eval(xPoints[i]);
+        yPoints11[i] = gr[10]->Eval(xPoints[i]);
+        yPoints12[i] = gr[11]->Eval(xPoints[i]);
+    }
+
+
+    int nFactorial[number];
+    nFactorial[0] = 1;
+    for (int i=1; i < 12 ; ++i) {
+        nFactorial[i] = nFactorial[i-1]*(i+1);
+    }
+
+
+
+
+    ///////// plot the functions together
+    TCanvas *c2 = new TCanvas("c2","total dists",200,10,700,500);
+    TGraph *gr1[number];
+    TMultiGraph *mg1 = new TMultiGraph();
+
+    for (int i = 0; i < 5; ++i) {
+        int lambda = i;
+
+        for (int j = 0; j < xPoints.size(); ++j) {
+
+            combArray[j] = ((pow(lambda, nValues[0])) * (exp(-lambda)) * (yPoints1[j]) / nFactorial[0])
+                           + ((pow(lambda, nValues[1])) * (exp(-lambda)) * (yPoints2[j]) / nFactorial[1])
+                           + ((pow(lambda, nValues[2])) * (exp(-lambda)) * (yPoints3[j]) / nFactorial[2])
+                           + ((pow(lambda, nValues[3])) * (exp(-lambda)) * (yPoints4[j]) / nFactorial[3])
+                           + ((pow(lambda, nValues[4])) * (exp(-lambda)) * (yPoints5[j]) / nFactorial[4])
+                           + ((pow(lambda, nValues[5])) * (exp(-lambda)) * (yPoints6[j]) / nFactorial[5])
+                           + ((pow(lambda, nValues[6])) * (exp(-lambda)) * (yPoints7[j]) / nFactorial[6])
+                           + ((pow(lambda, nValues[7])) * (exp(-lambda)) * (yPoints8[j]) / nFactorial[7])
+                           + ((pow(lambda, nValues[8])) * (exp(-lambda)) * (yPoints9[j]) / nFactorial[8])
+                           + ((pow(lambda, nValues[9])) * (exp(-lambda)) * (yPoints10[j]) / nFactorial[9])
+                           + ((pow(lambda, nValues[10])) * (exp(-lambda)) * (yPoints11[j]) / nFactorial[10])
+                           + ((pow(lambda, nValues[11])) * (exp(-lambda)) * (yPoints12[j]) / nFactorial[11]);
+
+        }
+        gr1[i] = new TGraph(xPoints.size() , xPoints.data() , combArray.data());
+        mg1->Add(gr1[i]);
+    }
+
+    mg1->Draw("AL");
+    mg1->SetTitle("CPHD");
+    mg1->GetXaxis()->SetTitle("Voltage");
+    mg1->GetYaxis()->SetTitle("Frequancy");
+
+
+    // for (int i=1; i < 12 ; ++i) {
+    //     std::cout<<nFactorial[i]<<endl;
+    // }
+    gPad->Update();
+    rootapp->Run();
+}

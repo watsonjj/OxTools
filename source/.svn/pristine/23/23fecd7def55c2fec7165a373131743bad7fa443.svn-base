@@ -1,0 +1,19 @@
+//
+// Created by Jason Watson on 10/09/15.
+//
+
+#ifndef OXTOOLS_CAMERA_IMAGE_PLOTTER_H
+#define OXTOOLS_CAMERA_IMAGE_PLOTTER_H
+
+#include <initialise.h>
+#include <Filepaths.h>
+#include "Entry.h"
+#include <Pixel.h>
+
+void camera_image_plotter(Filepaths filepaths, string branch_name,
+                          uint32_t event_requested,
+                          bool all_events = false, bool save_images = false);
+TH2F* base_TH2F_builder();
+vector<TLine*> pixel_outlines(vector<Pixel> pixel_vector);
+
+#endif //OXTOOLS_CAMERA_IMAGE_PLOTTER_H

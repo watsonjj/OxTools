@@ -1,0 +1,14 @@
+//
+// Created by Lucy Martin on 05/02/16.
+//
+
+#ifndef OXTOOLS_PULSESPECTRUMFIT_H
+#define OXTOOLS_PULSESPECTRUMFIT_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+
+void low_light_level_fit(TH1F* spectrum, fs::path output_path);
+
+#endif //OXTOOLS_PULSESPECTRUMFIT_H

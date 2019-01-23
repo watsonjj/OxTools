@@ -1,0 +1,263 @@
+
+
+__Installation Instructions for OSX:__
+
+	These instructions use the brew package-manager. make sure that you don't mix
+	brew (http://brew.sh) and Mac Ports (https://www.macports.org), this can result
+	in all kind of trouble if you are doing it wrong!
+
+	- Install brew
+
+		ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+	- Make sure xcode command line tools are installed
+
+		xcode-select --install
+
+	- Install Dependencies:
+
+		brew install cmake
+		brew install boost --with-icu4c --c++11
+		brew install modules
+		brew install subversion --with-python --with-perl
+		brew install pkg-config
+		brew install python --with-tcl-tk
+
+	- Optional:
+
+		brew install gsl
+		brew install cfitsio
+		brew install doxygen --with-libclang --with-dot
+		brew install fftw
+		brew install jpeg
+		brew install libpng
+		brew install libtiff --c++11
+		brew install modules
+
+	- Create Software and modules directory
+
+		mkdir -p ~/Software/modules
+
+	- Install ROOT6:
+
+		cd ~/Downloads
+		wget http://root.cern.ch/download/root_v6.04.00.source.tar.gz
+		tar -xzf root_v6.04.00.source.tar.gz
+		mkdir build
+		cd build/
+		mkdir ~/Software/root-6.04.00/
+		export CMAKE_PREFIX_PATH=/usr/local/
+		cmake ../root-6.04.00/ -DCMAKE_INSTALL_PREFIX=/Users/$USER/Software/root-6.04.00/ -DCMAKE_BUILD_TYPE=Release -Dall=ON
+		make -j5
+		make install
+
+	- Add the following to ~/.bashrc:
+
+		export LANG="en_US.UTF-8"
+		export LC_CTYPE="en_US.UTF-8"
+		export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig/:$PKG_CONFIG_PATH
+		export MODULEPATH=~/Software/modules
+		source /usr/local/opt/modules/Modules/init/bash
+
+	- Add module file for ROOT
+	Create a file called ~/Software/modules/root/6.04.00 and add the following to it:
+
+		#%Module
+
+		set pkgName root
+		set pkgVersion 6.04.00
+		set pkghome $::env(HOME)/Software/$pkgName-$pkgVersion
+
+		proc ModulesHelp { } {
+		  global pkgName
+		  global pkgVersion
+		  global pkghome
+		  puts stderr "\tSets up the environment for $pkgName version $pkgVersion\n"
+		  puts stderr "\t- ROOTSYS"
+		  puts stderr "\t- PATH"
+		  puts stderr "\t- LD_LIBRARY_PATH"
+		  puts stderr "\t- LD_RUN_PATH"
+		  puts stderr "\t- PYTHONPATH"
+		  puts stderr "\t- MANPATH\n"
+		}
+
+		module-whatis "sets up the environment for $pkgName version $pkgVersion"
+
+		conflict $pkgName
+
+		prepend-path ROOTSYS          $pkghome
+		prepend-path PATH             $pkghome/bin
+		prepend-path LD_LIBRARY_PATH  $pkghome/lib
+		prepend-path LD_RUN_PATH      $pkghome/lib
+		prepend-path PYTHONPATH       $pkghome/lib
+		prepend-path MANPATH          $pkghome/man
+
+	- Enter the following into terminal (or add to ~./bashrc to make it permanent)
+
+		module load root/6.04.00
+
+	- Check ROOT works
+
+		source ~/.bashrc
+		root -l
+
+	- Subversion
+		Make sure that you can log into the CTA svn with your ssh key before proceeding
+		(look at https://portal.cta-observatory.org/WG/DM/DM_wiki/SW_DEV/Software%20tools%20library/CTA_SWTOOLS.pdf
+		 to setup your SSH -key)
+
+	- Checkout OxTools from subversion
+
+		mkdir -p ~/Software/OxTools/source
+		mkdir -p ~/Software/OxTools/build
+		mkdir -p ~/Software/OxTools/install
+		cd ~/Software/OxTools
+		svn checkout svn+ssh://jwatson@svn.in2p3.fr/cta/User/jwatson/OxTools/trunk /Users/$USER/Software/OxTools/source
+
+	- Create modules file for OxTools
+
+		mkdir -p ~/Software/modules/OxTools
+		ln -s ~/Software/OxTools/source/modules ~/Software/modules/OxTools/trunk
+
+	- Enter the following into terminal (or add to ~./bashrc to make it permanent)
+
+		module load OxTools
+		module list
+
+
+
+__Installation instructions for RHEL7__
+
+	- Install modules
+
+		sudo yum install environment-modules
+
+	- Setup modules, add the following to ~/.bashrc
+
+		export MODULEPATH=~/Software/modules
+
+	- Install ROOT6:
+
+		cd ~/Downloads
+		wget http://root.cern.ch/download/root_v6.04.00.source.tar.gz
+		tar -xzf root_v6.04.00.source.tar.gz
+		mkdir build
+		cd build/
+		mkdir -p ~/Software/root-6.02.04/
+		export CMAKE_PREFIX_PATH=/usr/local/
+		cmake ../root-6.04.00/ -DCMAKE_INSTALL_PREFIX=$HOME/Software/root-6.04.00/ -DCMAKE_BUILD_TYPE=Release -Dall=ON
+		make -j5
+		make install
+
+	- Add module file for ROOT
+	   Create a file called ~/Software/modules/root/6.04.00 and add the following to it:
+
+	      #%Module
+
+	      set pkgName root
+	      set pkgVersion 6.04.00
+	      set pkghome $::env(HOME)/Software/$pkgName-$pkgVersion
+
+	      proc ModulesHelp { } {
+	        global pkgName
+	        global pkgVersion
+	        global pkghome
+	        puts stderr "\tSets up the environment for $pkgName version $pkgVersion\n"
+	        puts stderr "\t- ROOTSYS"
+	        puts stderr "\t- PATH"
+	        puts stderr "\t- LD_LIBRARY_PATH"
+	        puts stderr "\t- LD_RUN_PATH"
+	        puts stderr "\t- PYTHONPATH"
+	        puts stderr "\t- MANPATH\n"
+	      }
+
+	      module-whatis "sets up the environment for $pkgName version $pkgVersion"
+
+	      conflict $pkgName
+
+	      prepend-path ROOTSYS          $pkghome
+	      prepend-path PATH             $pkghome/bin
+	      prepend-path LD_LIBRARY_PATH  $pkghome/lib
+	      prepend-path LD_RUN_PATH      $pkghome/lib
+	      prepend-path PYTHONPATH       $pkghome/lib
+	      prepend-path MANPATH          $pkghome/man
+
+   - Install boost
+
+		mkdir -p $HOME/Software/boost/1.59.0/
+		cd ~/Downloads
+	   wget http://downloads.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.tar.gz
+		tar -xzf boost_1_59_0.tar.gz
+		cd boost_1_59_0/
+		./bootstrap.sh --with-toolset=gcc --with-icu --prefix=$HOME/Software/boost/1.59.0/
+		./b2 -j5
+		./b2 install
+
+   - Add module file for boost
+	   Create a file called ~/Software/modules/boost/1.59.0 and add the following to it:
+
+		   #%Module
+
+		   set pkgName boost
+		   set pkgVersion 1.59.0
+		   set pkghome $::env(HOME)/Software/$pkgName/$pkgVersion
+
+		   proc ModulesHelp { } {
+		     global compilerName
+		     global compilerVersion
+		     global pkgName
+		     global pkgVersion
+		     global pkghome
+		     puts stderr "\tSets up the environment for $pkgName version $pkgVersion\n"
+		     puts stderr "\t- LD_LIBRARY_PATH"
+		     puts stderr "\t- LD_RUN_PATH"
+		   }
+
+		   module-whatis "sets up the environment for $pkgName version $pkgVersion"
+
+		   conflict $pkgName
+
+		   prepend-path LD_LIBRARY_PATH  $pkghome/lib
+		   prepend-path LD_RUN_PATH      $pkghome/lib
+		   prepend-path CMAKE_PREFIX_PATH $pkghome
+
+	- Obtain OxTools package from svn
+		mkdir -p ~/Software/OxTools/source
+		mkdir -p ~/Software/OxTools/build
+		mkdir -p ~/Software/OxTools/install
+		cd ~/Software/OxTools
+		svn checkout svn+ssh://jwatson@svn.in2p3.fr/cta/User/jwatson/OxTools/trunk $HOME/Software/OxTools/source
+
+	- Source bash file (and add to ~/.bashrc)
+		source ~/Software/OxTools/source/bash_alias
+
+	- Enter the following into terminal (or add to ~./bashrc to make it permanent)
+
+		module load root/6.04.00
+
+	- Restart terminal and check ROOT works
+
+		root -l
+
+	- Subversion
+		Make sure that you can log into the CTA svn with your ssh key before proceeding
+		(look at https://portal.cta-observatory.org/WG/DM/DM_wiki/SW_DEV/Software%20tools%20library/CTA_SWTOOLS.pdf
+		 to setup your SSH -key)
+
+	- Checkout OxTools from subversion
+
+		mkdir -p ~/Software/OxTools/source
+		mkdir -p ~/Software/OxTools/build
+		mkdir -p ~/Software/OxTools/install
+		cd ~/Software/OxTools
+		svn checkout svn+ssh://jwatson@svn.in2p3.fr/cta/User/jwatson/OxTools/trunk /Users/$USER/Software/OxTools/source
+
+	- Create modules file for OxTools
+
+		mkdir -p ~/Software/modules/OxTools
+		ln -s ~/Software/OxTools/source/modules ~/Software/modules/OxTools/trunk
+
+	- Enter the following into terminal (or add to ~./bashrc to make it permanent)
+
+		module load OxTools
+		module list

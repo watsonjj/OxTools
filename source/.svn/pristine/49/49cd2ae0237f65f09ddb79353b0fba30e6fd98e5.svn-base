@@ -1,0 +1,89 @@
+//
+// Created by Jason Watson on 16/09/15.
+//
+
+/*
+ * 4th level of the OxTools entry structure.
+ *
+ * Each Entry is a summary of the 90ns readout for one of the 2048 pixels in the camera.
+ *
+ * When a new entry is added to an event, the min/max of the branches are updated.
+ *
+ * OxTools entry structure:
+ * RUN1
+ *  |-------------------------------|
+ * CAMERA1                      CAMERA2...(xNumCamerasInArray)
+ *  |   |-------------------|
+ *  |  PIXEL1            PIXEL2...(x2048 pixels)
+ *  |---------------|
+ *  EVENT1         EVENT2...(xNumEventTriggersForCamera)
+ *     |--------|
+ *   ENTRY1   ENTRY2...(x2048 pixels)
+ */
+
+#ifndef OXTOOLS_ENTRY_H
+#define OXTOOLS_ENTRY_H
+
+#include <initialise.h>
+#include <utilities.h>
+#include <Pixel.h>
+
+class Entry {
+private:
+	 static uint32_t sIdGenerator;
+	 map<uint32_t,uint32_t> mEventIdMap; // Map for matching source Event ID with an incremental ID
+
+	 static string sInvestigation;
+	 uint32_t mTTreeIndex;
+	 uint32_t mEvent;
+	 uint32_t mSourceEvent;
+	 uint64_t mEventTimestamp;
+	 int mCameraId;
+	 int mPixel;
+	 map<string,float> mBranchValueMap; /* When reading a .ox.root file, the entry values of branches
+													 * specified in the branch vector (Run initialisation
+													 * argument) are stored in this variable, where the string is
+													 * the branch name */
+
+	 // Branch variables, only used when converting from .txt file to .ox.root ttree
+	 float mPulseHeight;
+	 float mPulseArea;
+	 float mPulsePosition;
+	 float mTrueNPE;
+
+public:
+	 friend class Run;
+	 friend class Event;
+
+	 Entry() {
+		 Reset();
+	 }
+
+	 Entry(string txt_file_line) {
+		 ParseTxtFileLine(txt_file_line);
+	 }
+
+	 void Reset();
+	 static void ResetStatic();
+	 static void SetInvestigation(string investigation) { sInvestigation = investigation;}
+	 void SetReadhessConversionBranches(TTree *&output_TTree);
+	 void SetDefaultOxtoolsInputBranches(TTree *&input_TTree);
+	 void ParseTxtFileLine(string txt_file_line);
+	 void IncludeOxtoolInputBranch(TTree *&input_TTree, const vector<string> &branch_name_vector);
+	 void IncludeOxtoolInputBranch(TTree *&input_TTree, string branch_name);
+
+	 GETSTATIC(Investigation, sInvestigation, string);
+	 GET(TTreeIndex, mTTreeIndex, uint32_t);
+	 GET(Event, mEvent, uint32_t);
+	 GET(SourceEvent, mSourceEvent, uint32_t);
+	 GET(EventTimestamp, mEventTimestamp, uint32_t);
+	 GET(CameraId, mCameraId, uint32_t);
+	 GET(Pixel, mPixel, int);
+	 GET(PulseHeight, mPulseHeight, float);
+	 GET(PulseArea, mPulseArea, float);
+	 GET(PulsePosition, mPulsePosition, float);
+	 GET(TrueNPE, mTrueNPE, float);
+	 GETMAPCONTENT(BranchValue, mBranchValueMap, float, string);
+};
+
+#endif //OXTOOLS_ENTRY_H

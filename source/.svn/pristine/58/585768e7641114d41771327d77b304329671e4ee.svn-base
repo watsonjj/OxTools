@@ -1,0 +1,53 @@
+//
+// Created by Jason Watson on 16/09/15.
+//
+
+#ifndef OXTOOLS_PIXEL_H
+#define OXTOOLS_PIXEL_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Pixel {
+private:
+	 uint32_t mTTreeIndex;
+	 int mPixel;
+	 int mModule;
+	 int mModulePixelSlot; // Defined differently for readhess and libchec
+	 float mXpix;
+	 float mYpix;
+	 float mZpix;
+	 int mRow;
+	 int mColumn;
+	 int mCamera;
+public:
+	 friend class Run;
+	 friend class Camera;
+
+	 Pixel() {Reset();}
+	 Pixel(string txt_file_line) {
+		 ParseTxtFileLine(txt_file_line);
+	 }
+
+	 void Reset();
+	 void SetOutputTTreeBranches(TTree *&output_TTree);
+	 void ParseTxtFileLine(string txt_file_line);
+	 void SetInputTTreeBranches(TTree *&input_tree);
+
+	 bool operator <(const Pixel& other) const {
+		 return mPixel < other.mPixel;
+	 }
+
+	 GET(TTreeIndex, TTreeIndex, uint32_t);
+	 GET(Pixel, Pixel, int);
+	 GET(Module, Module, int);
+	 GET(ModulePixelSlot, ModulePixelSlot, int);
+	 GET(Xpix, Xpix, float);
+	 GET(Ypix, Ypix, float);
+	 GET(Zpix, Zpix, float);
+	 GETSETREF(Row, Row, int);
+	 GETSETREF(Column, Column, int);
+	 GET(Camera, Camera, int);
+};
+
+#endif //OXTOOLS_PIXEL_H

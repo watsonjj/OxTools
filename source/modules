@@ -1,0 +1,65 @@
+#%Module
+
+# ___PACKAGE INFO___
+set pkgName OxTools
+set pkgVersion trunk
+set pkgLanguage C++
+set pkgSvn "svn+ssh://$::env(SVNUSERNAME)@svn.in2p3.fr/cta/User/jwatson/OxTools/trunk"
+set pkgBase $::env(dir_software)/$pkgName
+set pkgSource $pkgBase/source
+set pkgBuild $pkgBase/build
+set pkgInstall $pkgBase/install
+
+# ___HELP___
+proc ModulesHelp { } {
+  global pkgName
+  global pkgVersion
+  global pkgLanguage
+  global pkgBase
+  puts stderr "\tSets up the environment for $pkgName"
+  puts stderr "\t  (version: $pkgVersion)"
+  puts stderr "\t  (language: $pkgLanguage)"
+  puts stderr "\t  (path: $pkgBase)"
+  puts stderr "\n"	
+}
+module-whatis "sets up the environment for $pkgName (version: $pkgVersion)" 
+conflict $pkgName
+
+# ___PREREQUISITES___
+prereq root
+
+# ___SETUP ENVIRONMENT___
+
+
+# ___DIRECTORIES___
+set-alias ${pkgName}_gos "cd $pkgSource" 
+set-alias ${pkgName}_gob "cd $pkgBuild" 
+set-alias ${pkgName}_goi "cd $pkgInstall" 
+
+# ___BASE VARIABLES___
+set pkgCLEAN "rm -rf $pkgBuild && mkdir -p $pkgBuild && rm -rf $pkgInstall && mkdir -p $pkgInstall" 
+set pkgCMAKE "cmake -DCMAKE_INSTALL_PREFIX=$pkgInstall $pkgSource" 
+set pkgMAKE "make -j8" 
+set pkgTEST "ctest -V" 
+set pkgINSTALL "make install" 
+
+# ___BASIC ENVIRONMENT VARIABLES___
+set-alias ${pkgName}_clean "cd $pkgBuild && $pkgCLEAN && cd $pkgBuild" 
+set-alias ${pkgName}_cmake "cd $pkgBuild && $pkgCMAKE" 
+set-alias ${pkgName}_make "cd $pkgBuild && $pkgMAKE" 
+set-alias ${pkgName}_install "cd $pkgBuild && $pkgINSTALL && cd $pkgInstall" 
+
+# ___COMPOSITE ENVIRONMENT VARIABLES___
+set-alias ${pkgName}_build "${pkgName}_make && ${pkgName}_install" 
+set-alias ${pkgName}_fresh "${pkgName}_clean && ${pkgName}_cmake && ${pkgName}_make && ${pkgName}_install"
+
+# ___VCS ENVIRONMENT VARIABLES___
+set-alias ${pkgName}_update "cd $pkgSource && svn update"
+set-alias ${pkgName}_checkout "mkdir -p $pkgSource && cd $pkgBase && svn checkout ${pkgSvn} $pkgSource"
+set-alias ${pkgName}_log "cd $pkgSource && svn log -l 10"
+set-alias ${pkgName}_info "cd $pkgSource && svn info"
+set-alias ${pkgName}_status "cd $pkgSource && svn status"
+set-alias ${pkgName}_diff "cd $pkgSource && svn diff"
+set-alias ${pkgName}_commit "cd $pkgSource && svn commit"
+set-alias ${pkgName}_revert "cd $pkgSource && svn revert -R $pkgSource"
+set-alias ${pkgName}_add "cd $pkgSource && svn add"

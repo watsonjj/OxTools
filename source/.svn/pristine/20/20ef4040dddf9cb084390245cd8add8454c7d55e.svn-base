@@ -1,0 +1,37 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#ifndef OXTOOLS_CAMERA_H
+#define OXTOOLS_CAMERA_H
+
+#include <initialise.h>
+#include <Pixel.h>
+
+
+class Camera {
+private:
+	 map<int,Pixel> m_pixel_map;
+	 int m_num_entries;
+	 int m_num_pixels;
+	 int m_num_rows;
+	 int m_num_columns;
+
+	 void SetTTreeNum(TTree* pixel_ttree);
+
+public:
+	 Camera(TTree* pixel_ttree);
+
+	 int GetRow(int pixel_id);
+	 int GetColumn(int pixel_id);
+	 int GetNumPixels() {return m_num_pixels;}
+	 int GetNumRows() {return m_num_rows;}
+	 int GetNumColumns() {return m_num_columns;}
+	 map<int,Pixel> GetPixelMap() {return m_pixel_map;}
+
+};
+
+typedef boost::shared_ptr<Camera> Camera_ptr;
+
+
+#endif //OXTOOLS_CAMERA_H

@@ -1,0 +1,27 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Camera.h>
+
+
+void Camera::Init() {
+	mCameraId = 0;
+	mNumEvents = 0;
+	mNumPixels = 0;
+	mNumRows = 0;
+	mNumColumns = 0;
+	mNumModules = 0;
+	mNumModulePixels = 0;
+	mEventMap.clear();
+	mPixelMap.clear();
+}
+
+void Camera::AddEventEntry(const Entry &entry_holder) {
+	mEventMap[entry_holder.GetEvent()].AddEntry(entry_holder);
+	mCameraId = entry_holder.GetCameraId();
+}
+
+void Camera::AddPixelEntry(const Pixel &pixel_holder) {
+	mPixelMap[pixel_holder.mPixelId] = pixel_holder;
+}

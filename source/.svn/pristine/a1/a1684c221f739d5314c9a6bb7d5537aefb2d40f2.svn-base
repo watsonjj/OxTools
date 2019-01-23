@@ -1,0 +1,52 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+#ifndef OXTOOLS_FILEPATHS_H
+#define OXTOOLS_FILEPATHS_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Filepaths {
+private:
+	 fs::path mInput;
+	 fs::path mInputName;
+	 fs::path mInputDirectory;
+	 fs::path mInputStem;
+	 fs::path mInputExtension;
+	 fs::path mOutput;
+	 fs::path mOutputName;
+	 fs::path mOutputDirectory;
+	 string mRunNumber;
+	 string mRunIdentifier;
+	 bool mOx;
+
+	 Filepaths() { }
+
+	 void Init();
+	 void SetOutput(fs::path output);
+	 void SetRun();
+public:
+	 Filepaths(fs::path input_filepath);
+	 void BuildOutput(string subdirectory, string name, string extension, fs::path directory = "");
+	 void CreateOutputDirectory();
+	 void SetInput(fs::path input);
+
+	 GET(Input, Input, fs::path);
+	 GET(InputName, InputName, fs::path);
+	 GET(InputDirectory, InputDirectory, fs::path);
+	 GET(InputStem, InputStem, fs::path);
+	 GET(InputExtension, InputExtension, fs::path);
+	 GET(Output, Output, fs::path);
+	 GET(OutputName, OutputName, fs::path);
+	 GET(OutputDirectory, OutputDirectory, fs::path);
+	 GET(RunNumber, RunNumber, string);
+	 GET(RunIdentifier, RunIdentifier, string);
+	 IS(Ox, Ox);
+};
+
+
+
+
+#endif //OXTOOLS_FILEPATHS_H

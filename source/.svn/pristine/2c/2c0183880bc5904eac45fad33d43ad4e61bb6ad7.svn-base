@@ -1,0 +1,40 @@
+//
+// Created by Jason Watson on 04/11/15.
+//
+
+/* UNFINISHED
+ * Subclass of the Event class. Calculates and holds the hillas parameters for an event.
+ */
+
+#ifndef OXTOOLS_HILLASPARAMETER_H
+#define OXTOOLS_HILLASPARAMETER_H
+
+#include <initialise.h>
+
+class HillasParameter {
+public:
+	 HillasParameter();
+
+	 GETSETREF(NPixels, mNPixels, std::size_t);
+	 GETSETREF(Intensity, mIntensity, float);
+	 GETSETREF(Length, mLength, float);
+	 GETSETREF(Width, mWidth, float);
+	 GETSETREF(Alpha, mAlpha, float);
+//	 GETSETREF(CenterOfGravity, CenterOfGravity, Coordinate);
+
+	 void print(std::ostream& pOStream) const;
+
+private:
+	 std::size_t mNPixels;  // pixels in image
+	 float mIntensity;      // photo electrons in imageF
+	 float mLength;         // length of ellipse
+	 float mWidth;          // width of ellipse
+	 float mAlpha;          // angle of major ellipse axis with respect to x-axis
+//	 Coordinate mCenterOfGravity;  // center of gravity of ellipse
+};
+
+typedef boost::shared_ptr<HillasParameter> HillasParameter_ptr;
+typedef boost::shared_ptr<const HillasParameter> HillasParameter_cptr;
+
+
+#endif //OXTOOLS_HILLASPARAMETER_H

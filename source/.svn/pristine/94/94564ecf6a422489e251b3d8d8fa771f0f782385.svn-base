@@ -1,0 +1,57 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+/*
+ * Class to hold input .ox.root file. A check to see if the input file is .ox.root is performed,
+ * the result of which is held in mOx. The output of the program can then be later set with
+ * BuildOutput, which will use the same location as the input file by default (a directory sharing
+ * the same name is created alongside the input file)
+ */
+
+#ifndef OXTOOLS_FILEPATHS_H
+#define OXTOOLS_FILEPATHS_H
+
+#include <initialise.h>
+#include <utilities.h>
+
+class Filepaths {
+private:
+	 fs::path mInput; // Full input filepath
+	 fs::path mInputName;
+	 fs::path mInputDirectory;
+	 fs::path mInputStem; // File name without the extension
+	 fs::path mInputExtension;
+	 fs::path mOutput;
+	 fs::path mOutputName;
+	 fs::path mOutputDirectory;
+	 string mRunIdentifier;
+	 bool mOx;
+
+	 Filepaths() { }
+
+	 void Init();
+	 void SetOutput(fs::path output);
+	 void SetRun();
+public:
+	 Filepaths(fs::path input_filepath);
+	 void BuildOutput(string subdirectory, string name, string extension, fs::path directory = "");
+	 void CreateOutputDirectory();
+	 void SetInput(fs::path input);
+
+	 GET(Input, mInput, fs::path);
+	 GET(InputName, mInputName, fs::path);
+	 GET(InputDirectory, mInputDirectory, fs::path);
+	 GET(InputStem, mInputStem, fs::path);
+	 GET(InputExtension, mInputExtension, fs::path);
+	 GET(Output, mOutput, fs::path);
+	 GET(OutputName, mOutputName, fs::path);
+	 GET(OutputDirectory, mOutputDirectory, fs::path);
+	 GET(RunIdentifier, mRunIdentifier, string);
+	 IS(Ox, mOx);
+};
+
+
+
+
+#endif //OXTOOLS_FILEPATHS_H

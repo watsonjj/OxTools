@@ -1,0 +1,10 @@
+//
+// Created by Lucy Martin on 05/02/16.
+//
+
+#ifndef OXTOOLS_PULSESPECTRUMFIT_H
+#define OXTOOLS_PULSESPECTRUMFIT_H
+
+void fitPulseSimulation();
+
+#endif //OXTOOLS_PULSESPECTRUMFIT_H

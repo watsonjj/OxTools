@@ -1,0 +1,59 @@
+//
+// Created by Jason Watson on 16/09/15.
+//
+
+#ifndef OXTOOLS_ENTRY_H
+#define OXTOOLS_ENTRY_H
+
+#include <initialise.h>
+#include <utilities.h>
+#include <Pixel.h>
+
+class Entry {
+private:
+	 static uint32_t s_nIDGenerator;
+
+	 static string s_investigation;
+	 uint32_t m_tree_index;
+	 uint32_t m_event;
+	 uint32_t m_source_event;
+	 uint64_t m_event_timestamp;
+	 uint32_t m_camera_id;
+	 int m_pixel;
+	 float m_pulse_height;
+	 float m_pulse_area;
+	 float m_pulse_position;
+	 float m_true_npe;
+
+	 map<string,float> m_branch_value;
+	 set<uint32_t> m_eventid_set; // Set for creating incremental id to fix corsika events
+
+public:
+
+	 Entry() {
+		 Reset();
+	 }
+
+	 Entry(string txt_file_line) {
+		 parse_txt_file_line(txt_file_line);
+	 }
+
+	 void Reset();
+	 static void ResetStatic();
+	 static void SetInvestigation(string investigation) {s_investigation = investigation;}
+	 void SetTreeIndex(uint32_t index) { m_tree_index = index;}
+	 void SetOutputReadhessTTreeBranches(TTree *&output_TTree);
+	 void SetDefaultOxtoolsInputBranches(TTree *&input_TTree);
+	 void parse_txt_file_line(string txt_file_line);
+	 void IncludeOxtoolInputBranch(TTree *&input_TTree, vector<string> branch_name_vector);
+	 void IncludeOxtoolInputBranch(TTree *&input_TTree, string branch_name);
+
+	 float GetBranchValue(string branch_name);
+	 static string GetInvestigation() {return s_investigation;}
+	 uint32_t GetEvent() {return m_event;}
+	 uint32_t GetSourceEvent() {return m_source_event;}
+	 int GetPixel() {return m_pixel;}
+	 int GetCamera() {return m_camera_id;}
+};
+
+#endif //OXTOOLS_ENTRY_H

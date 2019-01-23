@@ -1,0 +1,63 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#ifndef OXTOOLS_RUN_H
+#define OXTOOLS_RUN_H
+
+#include <initialise.h>
+#include <Camera.h>
+
+class Run {
+private:
+	 static uint32_t s_nIDGenerator;
+	 uint32_t m_run_id;
+	 fs::path m_oxroot_filepath;
+	 TFile* m_rootFile;
+	 TTree* m_event_ttree;
+	 TTree* m_pixel_ttree;
+
+	 map<int,Camera> m_camera_map;
+
+	 map<int,map<int,map<int,bool>>> m_bool_entry_map; // [camera][event][pixel]
+
+	 uint32_t m_num_cameras;
+	 uint32_t m_num_events;
+	 uint32_t m_num_entries;
+	 map<string,float> m_branchmap_value_max;
+	 map<string,float> m_branchmap_value_min;
+	 map<string,float> m_branchmap_value_min_positive;
+
+//	 Camera_ptr m_camera;
+
+	 void SetOxRootFilepath(fs::path input_root_filepath);
+	 void SetEventTTree();
+	 void SetPixelTTree();
+	 void SetEventTTreeNum();
+	 void BuildRunCameraPixel();
+	 void BuildRunCameraEvent(vector<string> branch_name_vector);
+	 void SetMinMaxBranchValues(vector<string> branch_name_vector);
+	 void AddCameraEntry(Entry entry_holder);
+	 void SetID() {
+		 m_run_id = s_nIDGenerator++;
+	 }
+
+
+public:
+	 Run(fs::path input_root_filepath, vector<string> branch_name_vector);
+	 void Reset();
+
+	 uint32_t GetNumEvents() {return m_num_events;}
+	 uint32_t GetNumCameras() {return m_num_cameras;}
+	 map<int,Camera> GetCameraMap() {return m_camera_map;}
+	 Camera* GetCamera(uint32_t camera_id);
+	 float GetBranchMax(string branch_name) {return m_branchmap_value_max[branch_name];}
+	 float GetBranchMin(string branch_name) {return m_branchmap_value_min[branch_name];}
+	 float GetBranchMinPositive(string branch_name) {return m_branchmap_value_min_positive[branch_name];}
+
+
+};
+
+//TODO: To allow multiple runs, need to change static var of Entry
+
+#endif //OXTOOLS_RUN_H

@@ -1,0 +1,14 @@
+//
+// Created by Lucy Martin on 05/02/16.
+//
+
+#include "pulse_spectrum_fit.h"
+#include <initialise.h>
+
+int main() {
+    TApplication *rootapp = new TApplication("example", 0, 0); // Allows graphics to be seen when using g++
+
+    fitPulseSimulation();
+    gPad->Update();
+    rootapp->Run();
+}

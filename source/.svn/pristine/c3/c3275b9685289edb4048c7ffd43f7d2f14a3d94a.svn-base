@@ -1,0 +1,38 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Event.h>
+
+void Event::Reset() {
+	m_pixel_entry_map.clear();
+	m_branchmap_value_minmax.clear();
+}
+
+std::pair<float,float> Event::GetBranchMinMax(string branch_name) {
+	if(!m_branchmap_value_minmax.count(branch_name)) {
+		float current_max = m_pixel_entry_map.begin()->second.GetBranchValue(branch_name);
+		float current_min = m_pixel_entry_map.begin()->second.GetBranchValue(branch_name);
+		for (auto entry : m_pixel_entry_map) {
+			if (entry.second.GetBranchValue(branch_name) > current_max) {
+				current_max = entry.second.GetBranchValue(branch_name);
+			}
+			if (entry.second.GetBranchValue(branch_name) < current_min) {
+				current_min = entry.second.GetBranchValue(branch_name);
+			}
+		}
+		m_branchmap_value_minmax[branch_name] = std::make_pair(current_min,current_max);
+	}
+	return m_branchmap_value_minmax[branch_name];
+}
+
+void Event::AddEntry(Entry entry_holder) {
+	m_pixel_entry_map[entry_holder.GetPixel()] = entry_holder;
+}
+
+Entry* Event::GetEntry(int pixel_id) {
+	if (!m_pixel_entry_map.count(pixel_id)) {
+		throw std::invalid_argument("[event][error] Entry does not exist");
+	}
+	return &m_pixel_entry_map[pixel_id];
+}

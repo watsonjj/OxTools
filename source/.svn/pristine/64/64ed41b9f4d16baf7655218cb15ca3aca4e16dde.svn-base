@@ -1,0 +1,49 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Camera.h>
+
+Camera::Camera(TTree* pixel_ttree) {
+	cout << Print::Level() << "[run] Building Run Camera" << endl;
+
+	Pixel pixel_holder;
+	pixel_holder.SetInputTTreeBranches(pixel_ttree);
+	SetTTreeNum(pixel_ttree);
+
+	for (int i = 0; i < m_num_entries; i++) {
+		pixel_ttree->GetEntry(i);
+		m_pixel_map[pixel_holder.m_pixel] = pixel_holder;
+	}
+	m_num_pixels = (int) m_pixel_map.size();
+	cout << Print::Level() << "[camera] Number of pixels set to: " << m_num_pixels << endl;
+}
+
+void Camera::SetTTreeNum(TTree *pixel_ttree) {
+	m_num_entries = (int) pixel_ttree->GetEntries();
+	if (m_num_entries == 0) throw std::invalid_argument("[ttree][error] Pixel TTree is empty!");
+	cout << Print::Level() << "[camera] Number of pixel entries set to: " << m_num_entries << endl;
+	if (check_TTree_branch_exists(pixel_ttree, "fPixelRow")
+	    && check_TTree_branch_exists(pixel_ttree, "fPixelColumn")) {
+		m_num_rows = (int) (pixel_ttree->GetMaximum("fPixelRow") + 1);
+		m_num_columns = (int) (pixel_ttree->GetMaximum("fPixelColumn") + 1);
+		cout << Print::Level() << "[camera] Max pixel row set to: " <<
+		                          m_num_rows << endl;
+		cout << Print::Level() << "[camera] Max pixel column set to: " <<
+		                          m_num_columns << endl;
+	}
+}
+
+int Camera::GetRow(int pixel_id) {
+	if (!m_pixel_map.count(pixel_id)) {
+		throw std::invalid_argument("[pixel][error] Pixel does not exist");
+	}
+	return m_pixel_map[pixel_id].m_row;
+}
+
+int Camera::GetColumn(int pixel_id) {
+	if (!m_pixel_map.count(pixel_id)) {
+		throw std::invalid_argument("[pixel][error] Pixel does not exist");
+	}
+	return m_pixel_map[pixel_id].m_column;
+}

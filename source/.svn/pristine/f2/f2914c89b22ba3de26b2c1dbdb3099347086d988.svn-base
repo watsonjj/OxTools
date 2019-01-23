@@ -1,0 +1,142 @@
+//
+// Created by Jason Watson on 11/09/15.
+//
+
+/*
+ * Class to hold input .ox.root file. A check to see if the input file is .ox.root is performed,
+ * the result of which is held in mOx. The output of the program can then be later set with
+ * BuildOutput, which will use the same location as the input file by default (a directory sharing
+ * the same name is created alongside the input file)
+ */
+
+#ifndef OXTOOLS_FILEPATH_H
+#define OXTOOLS_FILEPATH_H
+
+#include <initialise.h>
+#include <utilities.h>
+#include <Run.h>
+
+class Filepath : public std::enable_shared_from_this<Filepath> {
+	 friend class FilepathLoader;
+protected:
+	 Filepath(fs::path input_filepath) : mType("File")
+	 {
+		 Init();
+		 SetInput(input_filepath);
+		 mFileSize = fs::file_size(mInput);
+	 };
+
+	 string mType;
+	 fs::path mInput; // Full input filepath
+	 fs::path mInputDirectory;
+	 fs::path mInputName;
+	 fs::path mInputStem; // File name without the extension
+	 fs::path mInputExtension;
+	 bool mRoot;
+	 bool mOx;
+	 bool mTxt;
+	 string mRunIdentifier;
+	 fs::path mOutputOxrootFilepath;
+	 uintmax_t mFileSize;
+	 Run_ptr mRun;
+
+	 void Init();
+	 void SetInput(fs::path input);
+	 void SetRunIdentifier();
+
+public:
+
+	 GET(Input, mInput, fs::path);
+	 GET(InputDirectory, mInputDirectory, fs::path);
+	 GET(RunIdentifier, mRunIdentifier, string);
+	 IS(Txt, mTxt);
+	 IS(Root, mRoot);
+	 virtual GET(OutputOxrootFilepath, mOutputOxrootFilepath, fs::path);
+
+	 virtual void Print();
+	 virtual Run_ptr Read() {THROW("Read is not defined for file type")}
+
+	 // Root virtual
+	 virtual TFile* GetTFile()const{THROW("File must be type Root")}
+	 virtual bool IsLibCHEC()const{THROW("File must be type Root")}
+
+	 // Oxroot virtual
+	 virtual fs::path GetOutputDirectory()const{THROW("File must be type OxRoot")}
+	 virtual void CreateOutputDirectory()const{THROW("File must be type OxRoot")}
+	 virtual TTree* GetEventTTree()const{THROW("File must be type OxRoot")}
+	 virtual TTree* GetPixelTTree()const{THROW("File must be type OxRoot")}
+
+};
+
+
+
+class TxtFilepath : public Filepath {
+	 friend class FilepathLoader;
+protected:
+	 TxtFilepath(fs::path input_filepath) :
+			   Filepath(input_filepath)
+	 {mType = "Txt";}
+
+public:
+
+};
+
+class RootFilepath : public Filepath {
+	 friend class FilepathLoader;
+protected:
+	 RootFilepath(fs::path input_filepath) :
+			   Filepath(input_filepath),
+	         mTFile(new TFile(mInput.c_str(), "READ")),
+	         mLibCHEC(mTFile->GetListOfKeys()->Contains("camera_data"))
+	 {mType = "Root";}
+
+	 TFile* mTFile;
+	 bool mLibCHEC;
+
+public:
+	 virtual GET(TFile, mTFile, TFile*)
+	 virtual IS(LibCHEC,mLibCHEC)
+
+	 virtual void Print();
+};
+
+class OxRootFilepath : public RootFilepath {
+	 friend class FilepathLoader;
+private:
+protected:
+	 OxRootFilepath(fs::path input_filepath) :
+			   RootFilepath(input_filepath),
+			   mOutputDirectory(mInputDirectory / mRunIdentifier),
+			   mEventTTree((TTree *) mTFile->Get("event")),
+				mPixelTTree((TTree *) mTFile->Get("pixel"))
+	 {mType = "OxRoot";}
+
+	 fs::path mOutputDirectory;
+	 TTree* mEventTTree;
+	 TTree* mPixelTTree;
+
+public:
+	 virtual void CreateOutputDirectory() const;
+	 virtual Run_ptr Read();
+
+	 virtual GET(OutputDirectory, mOutputDirectory, fs::path);
+	 virtual GET(EventTTree, mEventTTree, TTree*);
+	 virtual GET(PixelTTree, mPixelTTree, TTree*);
+
+	 virtual fs::path GetOutputOxrootFilepath() const{THROW("File is already OxRoot");}
+};
+
+
+typedef std::shared_ptr<Filepath> Filepath_ptr;
+typedef std::shared_ptr<TxtFilepath> TxtFile_ptr;
+typedef std::shared_ptr<RootFilepath> RootFile_ptr;
+typedef std::shared_ptr<OxRootFilepath> OxrootFile_ptr;
+
+class FilepathLoader {
+public:
+	 // TODO: file already loaded? shared_ptr, argument for skipping repeated filepaths
+	 static Filepath_ptr Load(fs::path input_filepath);
+	 static Filepath_ptr ConvertAndLoad(fs::path input_filepath, bool delete_input=false);
+};
+
+#endif //OXTOOLS_FILEPATH_H

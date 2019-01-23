@@ -1,0 +1,60 @@
+//
+// Created by Jason Watson on 07/09/15.
+//
+
+/*
+ * Small header file to include and define project-wide libraries and alias'.
+ * This header file is typically included by all other header files.
+ */
+
+#ifndef OXTOOLS_INITIALISE_H
+#define OXTOOLS_INITIALISE_H
+
+//#include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string.h>
+#include <stdio.h>
+#include <algorithm>
+#include <thread>
+#include <future>
+
+#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
+#include <TTree.h>
+#include <TFile.h>
+#include <TLine.h>
+#include <TH2F.h>
+#include <TProfile.h>
+#include <TPad.h>
+#include <TCanvas.h>
+#include <TApplication.h>
+#include <TStyle.h>
+#include <TColor.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TMultiGraph.h>
+#include <TLegend.h>
+#include <TEllipse.h>
+#include <TMath.h>
+#include <TError.h>
+#include <TRandom3.h>
+#include <TKey.h>
+
+#include <macros.h>
+
+using std::cout;
+using std::endl;
+using std::vector;
+using std::set;
+using std::map;
+using std::string;
+
+namespace fs = boost::filesystem;
+
+//#define NUMPIX 1//2048
+
+#endif //OXTOOLS_INITIALISE_H

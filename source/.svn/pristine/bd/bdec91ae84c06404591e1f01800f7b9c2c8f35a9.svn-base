@@ -1,0 +1,50 @@
+/*
+ * define_rows_and_columns.h
+ *
+ *  Created on: 4 Sep 2015
+ *      Author: Jason
+ */
+
+/*
+ * In the event that an input does not have the rows and columns of the pixels defined, this script
+ * will define them based on x and y position of the pixel. An identical algorithm was added to
+ * readhess.
+ */
+
+#ifndef OXTOOLS_DEFINE_ROWS_AND_COLUMNS_H
+#define OXTOOLS_DEFINE_ROWS_AND_COLUMNS_H
+
+# ifndef H_MAX_PIX
+#  define H_MAX_PIX 4095
+# endif
+
+#include <initialise.h>
+#include <Pixel.h>
+
+class PixelInformation {
+public:
+
+	 int pixel[H_MAX_PIX];
+	 float xpix[H_MAX_PIX];
+	 float ypix[H_MAX_PIX];
+	 int row[H_MAX_PIX];
+	 int column[H_MAX_PIX];
+	 int num_pixels;
+
+	 PixelInformation() {
+		 for (int i=0; i<H_MAX_PIX; i++) {
+			 pixel[i] = -1;
+			 xpix[i] = 0;
+			 ypix[i] = 0;
+			 row[i] = -1;
+			 column[i] = -1;
+			 num_pixels = 0;
+		 }
+	 };
+};
+
+std::set<Pixel> define_rows_and_columns(const std::set<Pixel> &pixel_set, int num_pixels);
+void define_rows_and_columns(PixelInformation *camset);
+
+
+#endif // OXTOOLS_DEFINE_ROWS_AND_COLUMNS_H

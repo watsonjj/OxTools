@@ -1,0 +1,96 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+/*
+ * Class that corresponds to a fully processed .ox.root file.
+ * Top level of the OxTools entry structure.
+ *
+ * When initialising, the passed .ox.root file is processed for the entries and stored in the
+ * OxTools entry structure, along with information such as min/max values in a branch.
+ *
+ * Also when initialising, the float-type branches you wish to investigate must be passed as
+ * a vector. The important branches (e.g. PixelId) are automatically entered into the Entry object.
+ *
+ * OxTools entry structure:
+ * RUN1
+ *  |-------------------------------|
+ * CAMERA1                      CAMERA2...(xNumCamerasInArray)
+ *  |   |-------------------|
+ *  |  PIXEL1            PIXEL2...(x2048 pixels)
+ *  |---------------|
+ *  EVENT1         EVENT2...(xNumEventTriggersForCamera)
+ *     |--------|
+ *   ENTRY1   ENTRY2...(x2048 pixels)
+ */
+
+#ifndef OXTOOLS_RUN_H
+#define OXTOOLS_RUN_H
+
+#include <initialise.h>
+#include <Camera.h>
+
+class OxRootFilepath;
+
+typedef map<int, Camera> map_int_Camera_t;
+typedef map<uint32_t,map<uint32_t,map<uint32_t,bool>>> map_uint32_t_uint32_t_uint32_t_bool_t;
+typedef set<string> set_string;
+
+class Run {
+	 friend class OxRootFilepath;
+private:
+	 Run(OxRootFilepath * oxrootfile) : pOxRootFile(oxrootfile) {Init();}
+	 OxRootFilepath * pOxRootFile; // Parent class
+	 static uint32_t sIdGenerator; // Iterates based on the number of Run objects created
+
+	 uint32_t mRunId; // Automatically obtained from sIdGenerator
+
+	 map<int,Camera> mCameraMap; // Container of the next level of the OxTool structure
+	 map<uint32_t,map<uint32_t,map<uint32_t,bool>>> mBoolEntryMap; /* [camera][event][pixel]
+																						 * Check to see if there is an
+																						 * entry */
+
+	 uint32_t mNumCameras;
+	 uint32_t mNumEventTTreeEntries;
+	 uint32_t mNumPixelTTreeEntries;
+	 uint32_t mMaxEventNum;
+	 uint32_t mMaxPixelNum;
+	 set<string> mBranchNameSet;
+	 map<string,float> mBranchValueMaxMap;
+	 map<string,float> mBranchValueMinMap;
+	 map<int,map<string,float>> mEventBranchValueMaxMap; // Min and max for each branch for each
+	 map<int,map<string,float>> mEventBranchValueMinMap; //     event across all the cameras
+	 map<uint32_t,uint32_t> mSourceEventMap; // Map to match source event id to event id
+
+	 void Init();
+	 void BuildRun(const set<string> branch_name_set);
+	 void AddCameraEntry(const Entry &entry_holder);
+
+public:
+//	 Run(const fs::path &input_root_filepath, const vector<string> &branch_name_vector);
+//	 Run(OxRootFilepath* oxrootfile, const vector<string> &branch_name_vector);
+
+	 GET(RunId, mRunId, uint32_t);
+	 GET(OxRootFile, pOxRootFile, OxRootFilepath*)
+	 GETREF(CameraMap, mCameraMap, map_int_Camera_t);
+	 GETCREF(BoolEntryMap, mBoolEntryMap, map_uint32_t_uint32_t_uint32_t_bool_t);
+	 GETCREF(BranchNameSet, mBranchNameSet, set_string);
+	 GET(NumCameras, mNumCameras, uint32_t);
+	 GET(NumEventTTreeEntries, mNumEventTTreeEntries, uint32_t);
+	 GET(NumPixelTTreeEntries, mNumPixelTTreeEntries, uint32_t);
+	 GET(MaxEventNum, mMaxEventNum, uint32_t);
+	 GET(MaxPixelNum, mMaxPixelNum, uint32_t);
+	 GETMAPCONTENTREF(Camera,mCameraMap,Camera,int);
+	 GETMAPCONTENT(BranchMax,mBranchValueMaxMap,float,string);
+	 GETMAPCONTENT(BranchMin,mBranchValueMinMap,float,string);
+	 GETMAPCONTENT(CorrespondingEventId,mSourceEventMap,uint32_t,uint32_t);
+	 GET2DMAPCONTENT(EventBranchMax,mEventBranchValueMaxMap,float,int,string);
+	 GET2DMAPCONTENT(EventBranchMin,mEventBranchValueMinMap,float,int,string);
+
+	 bool CheckEntryExists(int camera_id, uint32_t event_id, uint32_t pixel_id);
+	 bool CheckEventExists(int camera_id, uint32_t event_id);
+	 bool CheckCameraExists(int camera_id);
+	 int GetNumCamerasWithEvent(uint32_t event_id);
+};
+
+#endif //OXTOOLS_RUN_H

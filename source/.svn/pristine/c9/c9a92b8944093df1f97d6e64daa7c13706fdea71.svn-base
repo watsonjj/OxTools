@@ -1,0 +1,84 @@
+//
+// Created by Jason Watson on 18/09/15.
+//
+
+#include "Entry.h"
+
+uint32_t Entry::sIdGenerator = 0;
+string Entry::sInvestigation = "";
+
+void Entry::Reset() {
+	mTTreeIndex = 0;
+	mEvent = 0;
+	mSourceEvent = 0;
+	mEventTimestamp = 0;
+	mCameraId = 0;
+	mPixel = 0;
+	mPulseHeight = 0;
+	mPulseArea = 0;
+	mPulsePosition = 0;
+	mTrueNPE = 0;
+
+	mBranchValueMap.clear();
+	mEventIdMap.clear();
+}
+
+void Entry::ResetStatic() {
+	sIdGenerator = 0;
+	sInvestigation = "";
+}
+
+void Entry::ParseTxtFileLine(string txt_file_line) {
+	std::istringstream iss(txt_file_line);
+	string context;
+	iss >> context;
+	iss >> sInvestigation;
+	iss >> mSourceEvent;
+	iss >> mEventTimestamp;
+	iss >> mCameraId;
+	iss >> mPixel;
+	iss >> mPulseHeight;
+	iss >> mPulseArea;
+	iss >> mPulsePosition;
+	iss >> mTrueNPE;
+	if (!mEventIdMap.count(mSourceEvent)) {
+		mEventIdMap[mSourceEvent] = sIdGenerator++;;
+	}
+	mEvent = mEventIdMap[mSourceEvent];
+}
+
+void Entry::SetReadhessConversionBranches(TTree *&output_TTree) {
+	output_TTree->Branch("fInvestigation", &sInvestigation, "fInvestigation/C");
+	output_TTree->Branch("fEventIndex", &mEvent, "fEventIndex/i");
+	output_TTree->Branch("fSourceEventIndex", &mSourceEvent, "fEventIndex/i");
+	output_TTree->Branch("fEventTimestamp", &mEventTimestamp, "fEventTimestamp/l");
+	output_TTree->Branch("fCameraId", &mCameraId, "fCameraId/I");
+	output_TTree->Branch("fPixelId", &mPixel, "fPixelId/I");
+	output_TTree->Branch("fPulseHeight", &mPulseHeight, "fPulseHeight/F");
+	output_TTree->Branch("fPulseArea", &mPulseArea, "fPulseArea/F");
+	output_TTree->Branch("fPulsePosition", &mPulsePosition, "fPulsePosition/F");
+	output_TTree->Branch("fTrueNPE", &mTrueNPE, "fTrueNPE/F");
+}
+
+void Entry::SetDefaultOxtoolsInputBranches(TTree *&input_TTree) {
+	input_TTree->SetBranchAddress("fEventIndex", &mEvent);
+	input_TTree->SetBranchAddress("fEventTimestamp", &mEventTimestamp);
+	if (check_TTree_branch_exists(input_TTree, "fCameraId")) {
+		input_TTree->SetBranchAddress("fCameraId", &mCameraId);
+	}
+	input_TTree->SetBranchAddress("fPixelId", &mPixel);
+}
+
+void Entry::IncludeOxtoolInputBranch(TTree *&input_TTree, const vector<string> &branch_name_vector) {
+	for (string branch_name : branch_name_vector) {
+		COUTP("[ttree][event][branch][" << branch_name << "]");
+		if (!check_TTree_branch_exists(input_TTree, branch_name.c_str()))
+			throw std::invalid_argument("[ttree][error] Entry TTree does not contain branch");
+		input_TTree->SetBranchAddress(branch_name.c_str(), &mBranchValueMap[branch_name]);
+	}
+}
+
+void Entry::IncludeOxtoolInputBranch(TTree *&input_TTree, string branch_name) {
+	vector<string> branch_name_vector = {branch_name};
+	IncludeOxtoolInputBranch(input_TTree, branch_name_vector);
+}

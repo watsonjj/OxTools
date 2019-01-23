@@ -1,0 +1,199 @@
+//
+// Created by Jason Watson on 02/11/15.
+//
+
+#include <Camera.h>
+
+
+void Camera::Init() {
+	mCameraId = 0;
+	mNumEvents = 0;
+	mNumPixels = 0;
+	mNumRows = 0;
+	mNumColumns = 0;
+	mNumModules = 0;
+	mNumModulePixels = 0;
+	mEventMap.clear();
+	mPixelMap.clear();
+	mBaseCameraTH2F = NULL;
+	mPixelIdTH2F = NULL;
+	mMin_y = DBL_MAX;
+	mMin2_y = DBL_MAX;
+	mMin_x = DBL_MAX;
+	mMin2_x = DBL_MAX;
+	mMax_y = -DBL_MAX;
+	mMax_x = -DBL_MAX;
+}
+
+void Camera::AddEventEntry(const Entry &entry_holder) {
+	auto itp = mEventMap.insert(std::map<int, Event>::value_type (entry_holder.GetEventId(),Event(this)));
+	(itp.first->second).AddEntry(entry_holder);
+	mCameraId = entry_holder.GetCameraId();
+}
+
+void Camera::AddPixelEntry(const Pixel &pixel_holder) {
+	mPixelMap.insert(std::map<int, Pixel>::value_type(pixel_holder.mPixelId, pixel_holder));
+
+	if (pixel_holder.GetXpix() < mMin_x) {
+		mMin2_x = mMin_x;
+		mMin_x = pixel_holder.GetXpix();
+	}
+	else if (pixel_holder.GetXpix() < mMin2_x && pixel_holder.GetXpix() > mMin_x) {
+		mMin2_x = pixel_holder.GetXpix();
+	}
+	if (pixel_holder.GetYpix() < mMin_y) {
+		mMin2_y = mMin_y;
+		mMin_y = pixel_holder.GetYpix();
+	}
+	else if (pixel_holder.GetYpix() < mMin2_y && pixel_holder.GetYpix() > mMin_y) {
+		mMin2_y = pixel_holder.GetYpix();
+	}
+	if (pixel_holder.GetXpix() > mMax_x) {
+		mMax_x = pixel_holder.GetXpix();
+	}
+	if (pixel_holder.GetYpix() > mMax_y) {
+		mMax_y = pixel_holder.GetYpix();
+	}
+}
+
+void Camera::SetStats() {
+	mNumEvents = (int) mEventMap.size();
+	mNumPixels = (int) mPixelMap.size();
+	assert(mNumEvents > 0 && mNumPixels > 0);
+	set<int> row_set, column_set, module_set, module_pixel_set;
+	for (auto &pixel_pair : mPixelMap) {
+		auto& pixel = pixel_pair.second;
+		row_set.insert(pixel.GetRow());
+		column_set.insert(pixel.GetColumn());
+		module_set.insert(pixel.GetModuleId());
+		module_pixel_set.insert(pixel.GetModulePixelSlot());
+	}
+	mNumRows = (int) row_set.size();
+	mNumColumns = (int) column_set.size();
+	mNumModules = (int) module_set.size();
+	mNumModulePixels = (int) module_pixel_set.size();
+}
+
+TH2F* Camera::GetBaseCameraTH2F() {
+	if (!mBaseCameraTH2F) {
+		mBaseCameraTH2F = new TH2F(Form("base_histogram%d", mCameraId),
+		                           "Base Histogram", mNumColumns, mMin_x,
+		                           mMax_x+mMax_x/10000, mNumRows, mMin_y, mMax_y+mMax_x/10000);
+		mBaseCameraTH2F->GetXaxis()->SetLabelSize(0);
+		mBaseCameraTH2F->GetXaxis()->SetTickLength(0);
+		mBaseCameraTH2F->GetYaxis()->SetLabelSize(0);
+		mBaseCameraTH2F->GetYaxis()->SetTickLength(0);
+		mBaseCameraTH2F->SetStats(0);
+		mBaseCameraTH2F->GetZaxis()->SetLabelSize(0.03);
+		mBaseCameraTH2F->GetZaxis()->SetTitleOffset(1.3);
+		mBaseCameraTH2F->SetMarkerSize(0.5);
+		mBaseCameraTH2F->SetMarkerColor(kWhite);
+
+		//Fill camera histogram with empty values so empty slots appear white
+		for (int i=0;i<mNumColumns;i++) {
+			for (int j=0;j<mNumRows;j++) {
+				mBaseCameraTH2F->SetBinContent(i+1,j+1,-FLT_MAX);
+			}
+		}
+
+		rainbow_palette();
+	}
+	return mBaseCameraTH2F;
+}
+
+void Camera::DrawPixelOutline() {
+	if (mPixelOutlineVector.empty()) {
+		int row, column;
+		TLine *line1, *line2, *line3, *line4;
+		int sqrt_modulepixel = (int) sqrt(mNumModulePixels);
+		if (sqrt_modulepixel != 8) COUTP("[DEBUG] sqrt_modulepixel != 8");
+
+		for (const auto &pixel_it_pair : mPixelMap) {
+			const auto &pixel = pixel_it_pair.second;
+//			row = pixel.GetRow();
+//			column = pixel.GetColumn();
+//			line1 = new TLine(column, row, column, row + 1);
+//			line2 = new TLine(column, row, column + 1, row);
+//			line3 = new TLine(column + 1, row, column + 1, row + 1);
+//			line4 = new TLine(column, row + 1, column + 1, row + 1);
+
+			int bin = GetBaseCameraTH2F()->FindBin(pixel.GetXpix(),pixel.GetYpix());
+			int z;
+			GetBaseCameraTH2F()->GetBinXYZ(bin, column, row, z);
+			double xlow = GetBaseCameraTH2F()->GetXaxis()->GetBinLowEdge(column);
+			double xup = GetBaseCameraTH2F()->GetXaxis()->GetBinUpEdge(column);
+			double ylow = GetBaseCameraTH2F()->GetYaxis()->GetBinLowEdge(row);
+			double yup = GetBaseCameraTH2F()->GetYaxis()->GetBinUpEdge(row);
+
+			line1 = new TLine(xlow, ylow, xlow, yup);
+			line2 = new TLine(xlow, ylow, xup, ylow);
+			line3 = new TLine(xup, ylow, xup, yup);
+			line4 = new TLine(xlow, yup, xup, yup);
+			if ((row) % sqrt_modulepixel == 0) line4->SetLineWidth(3);
+			if ((row-1) % sqrt_modulepixel == 0) line2->SetLineWidth(3);
+			if ((column) % sqrt_modulepixel == 0) line3->SetLineWidth(3);
+			if ((column -1) % sqrt_modulepixel == 0) line1->SetLineWidth(3);
+			mPixelOutlineVector.push_back(line1);
+			mPixelOutlineVector.push_back(line2);
+			mPixelOutlineVector.push_back(line3);
+			mPixelOutlineVector.push_back(line4);
+		}
+	}
+	for (TLine *line : mPixelOutlineVector) {
+		line->Draw("same");
+	}
+}
+
+TH2F* Camera::GetPixelIdTH2F() {
+	if (!mPixelIdTH2F) {
+		mPixelIdTH2F = (TH2F *) GetBaseCameraTH2F()->Clone("rCameraImage");
+		for (int i=0;i<mNumColumns;i++) {
+			for (int j=0;j<mNumRows;j++) {
+				mPixelIdTH2F->SetBinContent(i+1,j+1,0);
+			}
+		}
+		for (const auto &pixel_pair : mPixelMap) {
+			const auto &pixel = pixel_pair.second;
+			int pixel_id = pixel.GetPixelId();
+			double X = pixel.GetXpix();
+			double Y = pixel.GetYpix();
+			int bin = mPixelIdTH2F->FindBin(X, Y);
+			mPixelIdTH2F->SetBinContent(bin , pixel_id);
+		}
+		mPixelIdTH2F->SetMarkerColor(kWhite);
+	}
+	return mPixelIdTH2F;
+}
+
+void Camera::PlotMarker(double X, double Y) {
+	double size = 0.06;
+
+	TLine* l1 = new TLine(X - size, Y - size, X + size, Y + size);
+	TLine* l2 = new TLine(X - size, Y + size, X + size, Y - size);
+	l1->SetLineColor(kMagenta+1);
+	l2->SetLineColor(kMagenta+1);
+	l1->Draw("same");
+	l2->Draw("same");
+
+	TGraph* g = new TGraph();
+	g->SetPoint(g->GetN(), X, Y);
+	g->SetMarkerColor(kMagenta+1);
+	g->Draw("* same");
+}
+
+set<int> Camera::GetNeighbouringPixels(int pixel_id) {
+	Pixel &pixel = GetPixel(pixel_id);
+	if (pixel.mNeighbours.empty()) {
+		for (auto pixel_pair : mPixelMap) {
+			auto other_pixel = pixel_pair.second;
+			if (abs(pixel.mRow - other_pixel.mRow) <= 1) {
+				if (abs(pixel.mColumn - other_pixel.mColumn) <= 1) {
+					if (pixel.mPixelId != other_pixel.mPixelId) {
+						pixel.mNeighbours.insert(other_pixel.mPixelId);
+					}
+				}
+			}
+		}
+	}
+	return pixel.mNeighbours;
+}

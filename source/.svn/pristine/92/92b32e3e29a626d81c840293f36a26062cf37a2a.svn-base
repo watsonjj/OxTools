@@ -1,0 +1,262 @@
+#include "monte_carlo.h"
+
+// this runs the simulation, all other functions are called from here
+int main()
+{
+    bool peOrTime = 1; // 0 is multiple runs through to get the single pe peak
+//    TRandom* randomnum = new TRandom();
+//    gRandom = new TRandom();
+
+    if (peOrTime == 0)
+
+    {
+        TApplication *rootapp = new TApplication("example", 0, 0); // Allows graphics to be seen when using g++
+
+        std::vector<double> pulseOutput;
+
+        int crosstalkTracker = 0;
+
+        for (int i = 0; i < 10000; i++) {
+
+            // turn night sky background on or off
+            bool nsb = 0;
+            // turn afterpulsing on or off
+            bool afterpulsing = 1;
+            // turn cross talk on or off
+            bool crosstalk = 1;
+            // turn noise on or off
+            bool noise = 1;
+            // turn thermal emission from cathode on and off
+            bool thermal = 1;
+            // resistance of circuit
+            double resistance = 10;
+            // temp in Kelvin
+            double temperature = 293;
+            // band width
+            float bandwidth = 1E+11;
+
+
+            std::cout << "number" << i << std::endl;
+            // Assume pulse from laser is gaussian in time
+            int numberofLaserPhotons = 2048;
+            double meanNumberOfPhotons = numberofLaserPhotons / 2048;
+            std::cout << meanNumberOfPhotons << std::endl;
+            // may want to add photon losses as they all wont make it
+            // 2048 pixels in total on the camera (8*8)*32
+            // then assume poissonian about this mean
+
+            unsigned long int photonsAtPixel = (unsigned long int) gRandom->PoissonD(meanNumberOfPhotons);
+            std::cout << photonsAtPixel << std::endl;
+            // quantum efficiency dictates how many electrons are produced
+            unsigned long int numberofPhotoelectrons = photoElectrons(photonsAtPixel);
+            std::cout << numberofPhotoelectrons << std::endl;
+
+            while (crosstalkTracker > 0 && numberofPhotoelectrons > 0) {
+                std::cout << "cross talk tracker = " << crosstalkTracker << std::endl;
+                numberofPhotoelectrons -= 1;
+                crosstalkTracker -= 1;
+                std::cout << "cross talk tracker = " << crosstalkTracker << std::endl;
+            }
+
+            // this is from the data sheet, there are 8 dynodes and 1000V over whole system, photocathode to anode
+            // distributed oddly over system, ratio of 1 between dynodes and 1.5 between 8th dynode and anode.
+
+            int dynodes = 8;
+            double V[8] = {1000/9.5, (1000/9.5)*2, (1000/9.5)*3, (1000/9.5)*4, (1000/9.5)*5, (1000/9.5)*6, (1000/9.5)*7, (1000/9.5)*8};
+
+
+            std::vector<double> waveVector = dynodePropagation(numberofPhotoelectrons, nsb, dynodes, V, afterpulsing,
+                                                               crosstalk, crosstalkTracker, thermal);
+            // Assume they are produced with gaussian distribution from slight variations in the laser, start with gaussian about 0?
+
+            // assume that the spread in the time it takes for photons to reach camera is neglagable
+
+
+            TH1F *wave = 0;
+
+            wave = new TH1F("wave", "pulse", 900, 0., 90);
+            for (unsigned long int i = 0; i < waveVector.size(); i++) {
+                wave->Fill(waveVector[i]);
+            }
+
+
+            //float enoise = 0.3;
+
+            //   if (enoise > 0.0)
+            //       AddElectronicNoise(wave, enoise, bandwidth);
+
+            // change the electrons that i have into a voltage, have a number of electrons in a given time = current
+            // pick resistance in ohms
+
+            changeToVoltage(wave, resistance, noise, temperature, bandwidth);
+
+            wave->DrawCopy();
+            wave->SetTitle("Waveform");
+            wave->GetXaxis()->SetTitle("time / ns");
+            wave->GetYaxis()->SetTitle("frequancy");
+
+
+
+            // pulses viewed in 90ns window
+
+
+            // this should produce the expected output from camera, either integrate or take maximum
+
+            // start by taking maximum
+            //double max = wave->GetMaximum();
+            //pulseOutput.push_back (max);
+
+
+            // may want to integrate around the time we know the pulse is, paper on CTA charge resolution states that a window
+            // of size 18ns was used, mean pulse arival time in the following is about 28ns, then see what integrating about maximum does?
+
+            // my attempt at sticking in a discriminator
+
+            //if (max > 0.0015)
+            //{
+            double integral = wave->Integral(190, 370);
+            std::cout << "intgral" << integral << std::endl;
+            pulseOutput.push_back(integral);
+            //}
+
+            delete wave;
+
+
+        }
+
+        TCanvas *c2 = new TCanvas("c2", "pe peak", 200, 10, 700, 500);
+        TH1F *h1 = new TH1F("h1", "pe peak", 100, 0., 0.03);
+        for (unsigned long int i = 0; i < pulseOutput.size(); i++) {
+            h1->Fill(pulseOutput[i]);
+        }
+
+        h1->DrawCopy();
+        h1->SetTitle("Pulse Height");
+        h1->GetXaxis()->SetTitle("Pulse Height/ number of electrons");
+        h1->GetYaxis()->SetTitle("frequancy");
+
+        TFile *file = new TFile("pulse_simulation10.root", "RECREATE");
+        h1->Write();
+        file->Close();
+
+        delete h1;
+
+        gPad->Update();
+        rootapp->Run();
+
+    }
+
+    else
+    {
+
+        TApplication *rootapp = new TApplication("example", 0, 0); // Allows graphics to be seen when using g++
+
+        // turn night sky background on or off
+        bool nsb = 0;
+
+        // turn afterpulsing on or off
+        bool afterpulsing = 1;
+        // turn cross talk on or off
+        bool crosstalk = 0;
+        // turn noise on or off
+        bool noise = 1;
+        // turn thermal emission from cathode on and off
+        bool thermal = 1;
+        // resistance of circuit
+        double resistance = 10;
+        // temp in Kelvin
+        double temperature = 293;
+        // bandwidth
+        float bandwidth = 1E11;
+
+        int crosstalkTracker = 0;
+
+        // Assume pulse from laser is gaussian in time
+        int numberofLaserPhotons = 2048;
+        double meanNumberOfPhotons = numberofLaserPhotons / 2048;
+        std::cout << meanNumberOfPhotons << std::endl;
+        // may want to add photon losses as they all wont make it
+        // 2048 pixels in total on the camera (8*8)*32
+        // then assume poissonian about this mean
+
+        unsigned long int photonsAtPixel = (unsigned long int) gRandom->PoissonD(meanNumberOfPhotons);
+        std::cout << photonsAtPixel << std::endl;
+        // quantum efficiency dictates how many electrons are produced
+        unsigned long int numberofPhotoelectrons = photoElectrons(photonsAtPixel);
+        std::cout << numberofPhotoelectrons << std::endl;
+
+        // this is from the data sheet, there are 8 dynodes and 1000V over whole system, photocathode to anode
+        // distributed oddly over system, ratio of 1 between dynodes and 1.5 between 8th dynode and anode.
+
+        int dynodes = 8;
+        double V[8] = {1000/9.5, (1000/9.5)*2, (1000/9.5)*3, (1000/9.5)*4, (1000/9.5)*5, (1000/9.5)*6, (1000/9.5)*7, (1000/9.5)*8};
+
+
+        std::vector<double> waveVector = dynodePropagation(numberofPhotoelectrons, nsb, dynodes, V, afterpulsing,
+                                                           crosstalk, crosstalkTracker, thermal);
+        // Assume they are produced with gaussian distribution from slight variations in the laser, start with gaussian about 0?
+
+        TH1F *wave = 0;
+
+        wave = new TH1F("wave", "pulse", 900, 0., 90);
+        for (unsigned long int i = 0; i < waveVector.size(); i++) {
+            wave->Fill(waveVector[i]);
+        }
+
+        // assume that the spread in the time it takes for photons to reach camera is neglagable
+
+
+        float enoise = 0.3;
+
+        //  if (enoise > 0.0)
+        //      AddElectronicNoise(wave, enoise, bandwidth);
+
+        // change the electrons that i have into a voltage, have a number of electrons in a given time = current
+        // pick resistance in ohms
+
+        changeToVoltage(wave, resistance, noise, temperature, bandwidth);
+
+        wave->DrawCopy();
+        wave->SetTitle("Waveform");
+        wave->GetXaxis()->SetTitle("time / ns");
+        wave->GetYaxis()->SetTitle("frequancy");
+
+        // pulses viewed in 90ns window
+
+
+        // this should produce the expected output from camera, either integrate or take maximum
+
+        //start by taking maximum
+        double max = wave->GetMaximum();
+        //pulseOutput.push_back (max);
+
+        // Four transform for band width stuff
+
+        //TH1 *fftWaveform = 0;
+        //fftWaveform = wave->FFT(fftWaveform, "RE");
+        //TCanvas *c2 = new TCanvas("c2", "FFT", 200, 10, 700, 500);
+        //fftWaveform->DrawCopy();
+
+
+        // may want to integrate around the time we know the pulse is, paper on CTA charge resolution states that a window
+        // of size 18ns was used, mean pulse arival time in the following is about 28ns, then see what integrating about maximum does?
+
+        // my attempt at sticking in a discriminator
+
+        //if (max > 0.0015)
+        //{
+
+        double integral = wave->Integral(190, 370);
+        std::cout << "intgral" << integral << std::endl;
+        //pulseOutput.push_back(integral);
+        //}
+
+        delete wave;
+
+        gPad->Update();
+        rootapp->Run();
+
+    }
+}
+
+
